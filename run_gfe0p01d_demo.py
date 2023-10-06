@@ -43,7 +43,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         self.v10 = v10
         self.total_water = total_water
     
-    def draw(self):
+    def draw(self, title, out_path):
         self._load_shape_file()
         
         mycmap, mynorm, boundary = precipitation_cmap()
@@ -65,7 +65,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         gd0.xlabel_style = {'size': 12}
         gd0.ylabel_style = {'size': 12}
 
-        ax.set_title('ECMWF : 20231005_0000+(23-24h)', fontsize=16)
+        ax.set_title(title, fontsize=16)
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.qpf, cmap=mycmap, norm=mynorm)
 
@@ -89,7 +89,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
 
         ax.text(119.7, 20.9, f'total water : {int(self.total_water//1e6)} x $10^6 m^3$', fontsize=16)
 
-        plt.savefig('qpf_demo.png')
+        plt.savefig(out_path)
         plt.close()
 
 
@@ -98,7 +98,7 @@ class DrawGriddataMap_TminTmax(DrawGriddataMap):
     def put_data(self, t2m):
         self.t2m = t2m
     
-    def draw(self):
+    def draw(self, title, out_path):
         self._load_shape_file()
         
         mycmap, mynorm, boundary = temperature_cmap()
@@ -120,7 +120,7 @@ class DrawGriddataMap_TminTmax(DrawGriddataMap):
         gd0.xlabel_style = {'size': 12}
         gd0.ylabel_style = {'size': 12}
 
-        ax.set_title('ECDCA max-T : 20231005_0000+(24-36)', fontsize=16)
+        ax.set_title(title, fontsize=16)
 
         ax_k = fig.add_axes((0.12, 0.14, 0.2, 1), projection=ccrs.PlateCarree())
         ax_k.set_extent([118.05, 118.55, 24.3, 24.6])
@@ -145,19 +145,17 @@ class DrawGriddataMap_TminTmax(DrawGriddataMap):
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
 
-        plt.savefig('tmax_demo.png')
+        plt.savefig(out_path)
         plt.close()
 
     
     
 class DrawGriddataMap_WindSpeed(DrawGriddataMap):
     
-    def put_data(self, u10, v10):
-        self.u10 = u10
-        self.v10 = v10
-        self.ws = np.sqrt(self.u10**2 + self.v10**2)
+    def put_data(self, ws):
+        self.ws = ws
         
-    def draw(self):
+    def draw(self, title, out_path):
         self._load_shape_file()
         
         mycmap, mynorm, boundary = wind_speed_cmap()
@@ -179,7 +177,7 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         gd0.xlabel_style = {'size': 12}
         gd0.ylabel_style = {'size': 12}
 
-        ax.set_title('ECFMM Wind : 20231005_0000 + 24h', fontsize=16)
+        ax.set_title(title, fontsize=16)
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.ws/0.5144444, cmap=mycmap, norm=mynorm)
 
@@ -192,7 +190,7 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
 
-        plt.savefig('wind_demo.png')
+        plt.savefig(out_path)
 
 
 def main():
@@ -207,15 +205,15 @@ def main():
 
     Draw_qpf.put_latlon(lat, lon)
     Draw_qpf.put_data(qpf, u10, v10, total_water)
-    Draw_qpf.draw()
+    Draw_qpf.draw('ECMWF : 20231005_0000+(23-24h)', 'qpf_demo.png')
     
     Draw_t.put_latlon(lat, lon)
     Draw_t.put_data(tmax)
-    Draw_t.draw()
+    Draw_t.draw('ECDCA max-T : 20231005_0000+(24-36)', 'tmax_demo.png')
     
     Draw_ws.put_latlon(lat, lon)
-    Draw_ws.put_data(u10, v10)
-    Draw_ws.draw()
+    Draw_ws.put_data(np.sqrt(u10**2 + v10**2))
+    Draw_ws.draw('ECFMM Wind : 20231005_0000 + 24h', 'wind_demo.png')
     
     
 if __name__ == '__main__':
