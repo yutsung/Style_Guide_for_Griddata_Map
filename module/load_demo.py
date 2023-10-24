@@ -15,8 +15,8 @@ def load_demo_ref():
 
 
 def load_demo_wind():
-    wd = np.fromfile('ref/FST_202310050000TAU0024_301875_wd.bin', 'f4').reshape(525, 575)
-    ws = np.fromfile('ref/FST_202310050000TAU0024_301875_ws.bin', 'f4').reshape(525, 575)
+    wd = np.fromfile('ref/FST_202310050000TAU0024_301875_WD.bin', 'f4').reshape(525, 575)
+    ws = np.fromfile('ref/FST_202310050000TAU0024_301875_WS.bin', 'f4').reshape(525, 575)
     theta_d = (450 - wd) % 360
     theta_d = (theta_d + 180)%360
     theta = theta_d * np.pi / 180
