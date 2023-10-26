@@ -18,6 +18,9 @@ from module.colormap import precipitation_cmap, temperature_cmap, wind_speed_cma
 
 class DrawGriddataMap:
     
+    def __init__(self, shapefile_dir='ref'):
+        self.shapefile_dir = 'ref'
+    
     def put_latlon(self, lat, lon):
         self.lat = lat
         self.lon = lon
@@ -36,15 +39,15 @@ class DrawGriddataMap:
             f'{init_date.strftime("%Y%m%d_%H%M")}+{lead_time_str}'
         )
     
-    def _load_shape_file(self, linewidth=0.8):
+    def _load_shapefile(self, linewidth=0.8):
         self.shape_feature_tw = cfeature.ShapelyFeature(
-            shpreader.Reader('ref/gadm36_TWN_shp/gadm36_TWN_2').geometries(),
+            shpreader.Reader(f'{self.shapefile_dir}/gadm36_TWN_shp/gadm36_TWN_2').geometries(),
             ccrs.PlateCarree(), 
             facecolor='none',
             linewidth=linewidth
         )
         self.shape_feature_ch = cfeature.ShapelyFeature(
-            shpreader.Reader('ref/CHN_adm/CHN_adm1').geometries(),
+            shpreader.Reader(f'{self.shapefile_dir}/CHN_adm/CHN_adm1').geometries(),
             ccrs.PlateCarree(), 
             facecolor='none',
             linewidth=linewidth
@@ -60,7 +63,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         self.total_water = total_water
     
     def draw(self, out_path):
-        self._load_shape_file()
+        self._load_shapefile()
         
         mycmap, mynorm, boundary = precipitation_cmap()
 
@@ -115,7 +118,7 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
         self.t2m = t2m
     
     def draw(self, out_path):
-        self._load_shape_file()
+        self._load_shapefile()
         
         mycmap, mynorm, boundary = temperature_cmap()
 
@@ -172,7 +175,7 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         self.ws = ws
         
     def draw(self, out_path):
-        self._load_shape_file()
+        self._load_shapefile()
         
         mycmap, mynorm, boundary = wind_speed_cmap()
 
