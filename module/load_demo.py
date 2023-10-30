@@ -27,9 +27,10 @@ def load_demo_wind():
     
 def load_demo_tmax(mask):
     tmax = np.fromfile('ref/FST_202310050000TAU0024_301875_Tmax.bin', 'f4')
-    tmax[mask] = np.nan
+    tmax_mask = tmax.copy()
+    tmax_mask[mask] = np.nan
     tmax = tmax.reshape(525, 575)
-    return tmax
+    return tmax, tmax_mask
     
     
 def load_demo_qpf(lat, mask, dlon_degree=0.01, dlat_degree=0.01):
