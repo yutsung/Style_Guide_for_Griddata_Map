@@ -67,7 +67,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         
         mycmap, mynorm, boundary = precipitation_cmap()
 
-        fig = plt.figure(figsize=(6, 7.5))
+        fig = plt.figure(figsize=(6, 7))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
         ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
 
@@ -88,7 +88,8 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.qpf, cmap=mycmap, norm=mynorm)
 
-        cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
+        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
             '', '0.1', '1', '2', '6', '10', '15', '20', '30', '40', 
@@ -116,8 +117,52 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
     
     def put_data(self, t2m):
         self.t2m = t2m
-    
+        
     def draw(self, out_path):
+        self.draw_v1(out_path)
+        
+    def draw_v1(self, out_path):
+        self._load_shapefile()
+        
+        mycmap, mynorm, boundary = temperature_cmap()
+
+        fig = plt.figure(figsize=(6, 7))
+        ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
+        ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
+
+        ax.add_feature(self.shape_feature_tw)
+        ax.add_feature(self.shape_feature_ch)
+
+        gd0 = ax.gridlines(draw_labels=True, alpha=0.5, linestyle=':')
+        gd0.top_labels = False
+        gd0.right_labels = False
+        gd0.xlocator = mticker.FixedLocator([118, 119, 120, 121, 122])
+        gd0.ylocator = mticker.FixedLocator([22, 23, 24, 25, 26])
+        gd0.xformatter = LONGITUDE_FORMATTER
+        gd0.yformatter = LATITUDE_FORMATTER
+        gd0.xlabel_style = {'size': 12}
+        gd0.ylabel_style = {'size': 12}
+
+        ax.set_title(self.title, fontsize=16)
+
+        pcolor = ax.pcolormesh(self.lon, self.lat, self.t2m, cmap=mycmap, norm=mynorm)
+
+        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        #cbar_ax = fig.add_axes([0.942, 0.078, 0.02, 0.52])
+        cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
+        cbar.ax.set_yticklabels([
+            '', -10, '', -8, '', -6, '', -4, '', -2, '', 
+             0, '',  2, '',  4, '',  6, '',  8, '', 
+            10, '', 12, '', 14, '', 16, '', 18, '', 
+            20, '', 22, '', 24, '', 26, '', 28, '', 
+            30, '', 32, '', 34, '', 36, '', 38, ''
+        ])
+        cbar.ax.tick_params(size=0, labelsize=6)
+
+        plt.savefig(out_path)
+        plt.close()
+    
+    def draw_v0(self, out_path):
         self._load_shapefile()
         
         mycmap, mynorm, boundary = temperature_cmap()
@@ -179,7 +224,7 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         
         mycmap, mynorm, boundary = wind_speed_cmap()
 
-        fig = plt.figure(figsize=(6, 7.5))
+        fig = plt.figure(figsize=(6, 7))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
         ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
 
@@ -200,10 +245,11 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.ws/0.5144444, cmap=mycmap, norm=mynorm)
 
-        cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
+        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
-            '0', '', '1', '2', '3', '4', '5', '6', '7', '8', 
+            '', '0.5', '1', '2', '3', '4', '5', '6', '7', '8', 
             '9', '10', '11', '12', '13', '14', '15', '16', '17', '>17',
             ''
         ])
@@ -217,7 +263,7 @@ def main():
     
     lat, lon, sea_mask = load_demo_ref()
     qpf, total_water = load_demo_qpf(lat, sea_mask)
-    tmax = load_demo_tmax(sea_mask)
+    tmax, tmax_mask = load_demo_tmax(sea_mask)
     u10, v10 = load_demo_wind()
     
     Draw_qpf = DrawGriddataMap_QPF()
