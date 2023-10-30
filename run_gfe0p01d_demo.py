@@ -25,18 +25,20 @@ class DrawGriddataMap:
         self.lat = lat
         self.lon = lon
         
-    def set_info(self, product, parameter, init_date, lead_time_start, lead_time_end):
+    def set_info(self, product, parameter, init_date, lead_time_start, lead_time_end=None):
         self.product = product
         self.parameter = parameter
         self.lead_time_start = lead_time_start
         self.lead_time_end = lead_time_end
         if lead_time_start == lead_time_end:
-            lead_time_str = f'{lead_time_end}h'
+            lead_time_str = f'+{lead_time_end}h'
+        elif lead_time_start == -1:
+            lead_time_str = ''
         else:
-            lead_time_str = f'({lead_time_start}-{lead_time_end}h)'
+            lead_time_str = f'+({lead_time_start}-{lead_time_end}h)'
         self.title = (
             f'{self.product} {self.parameter} : '
-            f'{init_date.strftime("%Y%m%d_%H%M")}+{lead_time_str}'
+            f'{init_date.strftime("%Y%m%d_%H%M")}{lead_time_str}'
         )
     
     def _load_shapefile(self, linewidth=0.8):
@@ -65,7 +67,7 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
     def draw(self, out_path):
         self._load_shapefile()
         
-        mycmap, mynorm, boundary = precipitation_cmap()
+        mycmap, mynorm, boundary, color_under, color_over = precipitation_cmap()
 
         fig = plt.figure(figsize=(6, 7))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
@@ -87,25 +89,28 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         ax.set_title(self.title, fontsize=16)
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.qpf, cmap=mycmap, norm=mynorm)
+        pcolor.cmap.set_under(color_under)
+        pcolor.cmap.set_over(color_over)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
-            '', '0.1', '1', '2', '6', '10', '15', '20', '30', '40', 
-            '50', '70', '90', '110', '130', '150', '200', '300', ''
+            '0.1', '1', '2', '6', '10', '15', '20', '30', '40', 
+            '50', '70', '90', '110', '130', '150', '200', '300'
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
 
-        mycmap, mynorm, boundary = wind_speed_cmap()
+        mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap()
         step = 40
         ws = np.sqrt(self.u10**2 + self.v10**2)
-        ax.barbs(
+        cs_barbs = ax.barbs(
             self.lon[::step, ::step], self.lat[::step, ::step], 
             self.u10[::step, ::step]/0.51444, self.v10[::step, ::step]/0.51444, 
             ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
             length=6
         )
+        cs_barbs.cmap.set_under(color_under)
+        cs_barbs.cmap.set_over(color_over)
 
         ax.text(119.7, 20.9, f'total water : {int(self.total_water//1e6)} x $10^6 m^3$', fontsize=16)
 
@@ -124,7 +129,7 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
     def draw_v1(self, out_path):
         self._load_shapefile()
         
-        mycmap, mynorm, boundary = temperature_cmap()
+        mycmap, mynorm, boundary, color_under, color_over = temperature_cmap()
 
         fig = plt.figure(figsize=(6, 7))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
@@ -146,16 +151,17 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
         ax.set_title(self.title, fontsize=16)
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.t2m, cmap=mycmap, norm=mynorm)
+        pcolor.cmap.set_under(color_under)
+        pcolor.cmap.set_over(color_over)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.078, 0.02, 0.52])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
-            '', -10, '', -8, '', -6, '', -4, '', -2, '', 
+            -10, '', -8, '', -6, '', -4, '', -2, '', 
              0, '',  2, '',  4, '',  6, '',  8, '', 
             10, '', 12, '', 14, '', 16, '', 18, '', 
             20, '', 22, '', 24, '', 26, '', 28, '', 
-            30, '', 32, '', 34, '', 36, '', 38, ''
+            30, '', 32, '', 34, '', 36, '', 38
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
 
@@ -165,7 +171,7 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
     def draw_v0(self, out_path):
         self._load_shapefile()
         
-        mycmap, mynorm, boundary = temperature_cmap()
+        mycmap, mynorm, boundary, color_under, color_over = temperature_cmap()
 
         fig = plt.figure(figsize=(6, 7.5))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
@@ -222,7 +228,7 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
     def draw(self, out_path):
         self._load_shapefile()
         
-        mycmap, mynorm, boundary = wind_speed_cmap()
+        mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap()
 
         fig = plt.figure(figsize=(6, 7))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
@@ -244,14 +250,14 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         ax.set_title(self.title, fontsize=16)
 
         pcolor = ax.pcolormesh(self.lon, self.lat, self.ws/0.5144444, cmap=mycmap, norm=mynorm)
+        pcolor.cmap.set_under(color_under)
+        pcolor.cmap.set_over(color_over)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
-            '', '0.5', '1', '2', '3', '4', '5', '6', '7', '8', 
-            '9', '10', '11', '12', '13', '14', '15', '16', '17', '>17',
-            ''
+            '0.5', '1', '2', '3', '4', '5', '6', '7', '8', 
+            '9', '10', '11', '12', '13', '14', '15', '16', '17', '>17'
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
 
