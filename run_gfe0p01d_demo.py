@@ -56,13 +56,13 @@ class DrawGriddataMap:
     
 class DrawGriddataMap_QPF(DrawGriddataMap):
     
-    def put_data(self, qpf, u10, v10, total_water):
+    def put_data(self, qpf, total_water, u10=None, v10=None):
         self.qpf = qpf
         self.u10 = u10
         self.v10 = v10
         self.total_water = total_water
     
-    def draw(self, out_path):
+    def draw(self, out_path, draw_barbs=False):
         self._load_shapefile()
         
         mycmap, mynorm, boundary = precipitation_cmap()
@@ -89,23 +89,29 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
         pcolor = ax.pcolormesh(self.lon, self.lat, self.qpf, cmap=mycmap, norm=mynorm)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
             '', '0.1', '1', '2', '6', '10', '15', '20', '30', '40', 
             '50', '70', '90', '110', '130', '150', '200', '300', ''
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
-
-        mycmap, mynorm, boundary = wind_speed_cmap()
-        step = 40
-        ws = np.sqrt(self.u10**2 + self.v10**2)
-        ax.barbs(
-            self.lon[::step, ::step], self.lat[::step, ::step], 
-            self.u10[::step, ::step]/0.51444, self.v10[::step, ::step]/0.51444, 
-            ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
-            length=6
+        cbar.ax.set_title(
+            'mm',
+            fontsize=12,
+            x=1.48,
+            y=1.05
         )
+
+        if draw_barbs:
+            mycmap, mynorm, boundary = wind_speed_cmap()
+            step = 40
+            ws = np.sqrt(self.u10**2 + self.v10**2)
+            ax.barbs(
+                self.lon[::step, ::step], self.lat[::step, ::step], 
+                self.u10[::step, ::step]/0.51444, self.v10[::step, ::step]/0.51444, 
+                ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
+                length=6
+            )
 
         ax.text(119.7, 20.9, f'total water : {int(self.total_water//1e6)} x $10^6 m^3$', fontsize=16)
 
@@ -148,7 +154,6 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
         pcolor = ax.pcolormesh(self.lon, self.lat, self.t2m, cmap=mycmap, norm=mynorm)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.078, 0.02, 0.52])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
             '', -10, '', -8, '', -6, '', -4, '', -2, '', 
@@ -158,6 +163,13 @@ class DrawGriddataMap_Temperature(DrawGriddataMap):
             30, '', 32, '', 34, '', 36, '', 38, ''
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
+        cbar.ax.set_title(
+            '$^\circ$C',
+            fontsize=12,
+            x=1.05,
+            y=1.03
+        )
+
 
         plt.savefig(out_path)
         plt.close()
@@ -246,14 +258,19 @@ class DrawGriddataMap_WindSpeed(DrawGriddataMap):
         pcolor = ax.pcolormesh(self.lon, self.lat, self.ws/0.5144444, cmap=mycmap, norm=mynorm)
 
         cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
-        #cbar_ax = fig.add_axes([0.942, 0.11, 0.02, 0.50])
         cbar = fig.colorbar(pcolor, cax=cbar_ax, extend='both', ticks=boundary)
         cbar.ax.set_yticklabels([
-            '', '0.5', '1', '2', '3', '4', '5', '6', '7', '8', 
+            '', '0', '1', '2', '3', '4', '5', '6', '7', '8', 
             '9', '10', '11', '12', '13', '14', '15', '16', '17', '>17',
             ''
         ])
         cbar.ax.tick_params(size=0, labelsize=6)
+        cbar.ax.set_title(
+            'BS',
+            fontsize=12,
+            x=1.16,
+            y=1.05
+        )
 
         plt.savefig(out_path)
 
@@ -271,14 +288,24 @@ def main():
     Draw_ws  = DrawGriddataMap_WindSpeed()
 
     Draw_qpf.put_latlon(lat, lon)
-    Draw_qpf.put_data(qpf, u10, v10, total_water)
+    Draw_qpf.put_data(qpf, total_water)
     Draw_qpf.set_info('ECMWF', 'QPF', init_date, 23, 24)
     Draw_qpf.draw('qpf_demo.png')
+    
+    Draw_qpf.put_latlon(lat, lon)
+    Draw_qpf.put_data(qpf, total_water, u10, v10)
+    Draw_qpf.set_info('ECMWF', 'QPF', init_date, 23, 24)
+    Draw_qpf.draw('qpf_barbs_demo.png', draw_barbs=True)
     
     Draw_t.put_latlon(lat, lon)
     Draw_t.put_data(tmax)
     Draw_t.set_info('ECDCA', 'max-T', init_date, 24, 36)
     Draw_t.draw('tmax_demo.png')
+    
+    Draw_t.put_latlon(lat, lon)
+    Draw_t.put_data(tmax_mask)
+    Draw_t.set_info('ECDCA', 'max-T', init_date, 24, 36)
+    Draw_t.draw('tmax_mask_demo.png')
     
     Draw_ws.put_latlon(lat, lon)
     Draw_ws.put_data(np.sqrt(u10**2 + v10**2))

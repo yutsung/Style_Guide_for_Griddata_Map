@@ -30,6 +30,7 @@ def load_demo_tmax(mask):
     tmax_mask = tmax.copy()
     tmax_mask[mask] = np.nan
     tmax = tmax.reshape(525, 575)
+    tmax_mask = tmax_mask.reshape(525, 575)
     return tmax, tmax_mask
     
     
