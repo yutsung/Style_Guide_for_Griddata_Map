@@ -105,28 +105,19 @@ class DrawGriddataMap_QPF(DrawGriddataMap):
             x=1.48,
             y=1.05
         )
-        mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap()
-        step = 40
-        ws = np.sqrt(self.u10**2 + self.v10**2)
-        cs_barbs = ax.barbs(
-            self.lon[::step, ::step], self.lat[::step, ::step], 
-            self.u10[::step, ::step]/0.51444, self.v10[::step, ::step]/0.51444, 
-            ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
-            length=6
-        )
-        cs_barbs.cmap.set_under(color_under)
-        cs_barbs.cmap.set_over(color_over)
 
         if draw_barbs:
-            mycmap, mynorm, boundary = wind_speed_cmap()
+            mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap()
             step = 40
             ws = np.sqrt(self.u10**2 + self.v10**2)
-            ax.barbs(
+            cs_barbs = ax.barbs(
                 self.lon[::step, ::step], self.lat[::step, ::step], 
                 self.u10[::step, ::step]/0.51444, self.v10[::step, ::step]/0.51444, 
                 ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
                 length=6
             )
+            cs_barbs.cmap.set_under(color_under)
+            cs_barbs.cmap.set_over(color_over)
 
         ax.text(119.7, 20.9, f'total water : {int(self.total_water//1e6)} x $10^6 m^3$', fontsize=16)
 
