@@ -53,12 +53,26 @@ def temperature_cmap():
     return mycmap, mynorm, boundary, color_under, color_over
 
 
-def wind_speed_cmap():
+def wind_speed_cmap_kt():
     color_under = '#ffffff'
     color_over = '#1e0a0a'
     boundary = [
         0.5, 1.0, 4.0, 7.0, 11.0, 17.0, 22.0, 28.0, 34.0, 
         41.0, 48.0, 56.0, 64.0, 72.0, 81.0, 90.0, 100.0, 109., 119.0
+    ]
+    hex_list = [
+        '#e6e6e6', '#d3d3d3', '#979797', '#646464', '#96d2fa', '#1464d5', '#34d53a', '#ffe87c', '#ffa001',
+        '#ff1500', '#820000', '#663e32', '#b48c82', '#ffc8c8', '#e68282', '#d45050', '#641616' ,'#321414', 
+    ]
+    mycmap, mynorm = from_colorlist_to_cmap_norm(boundary, hex_list)
+    return mycmap, mynorm, boundary, color_under, color_over
+
+def wind_speed_cmap_ms():
+    color_under = '#ffffff'
+    color_over = '#1e0a0a'
+    boundary = [
+        0.1, 0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 
+        20.8, 24.5, 28.5, 32.7, 37.0, 41.5, 46.2, 51.0, 56.1, 61.3
     ]
     hex_list = [
         '#e6e6e6', '#d3d3d3', '#979797', '#646464', '#96d2fa', '#1464d5', '#34d53a', '#ffe87c', '#ffa001',
