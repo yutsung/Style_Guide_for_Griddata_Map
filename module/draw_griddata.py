@@ -15,8 +15,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from module.load_demo import load_demo_ref
 from module.load_demo import load_demo_qpf, load_demo_tmax, load_demo_wind
 from module.colormap import from_colorlist_to_cmap_norm
-from module.colormap import precipitation_cmap, temperature_cmap
-from module.colormap import wind_speed_cmap_kt, wind_speed_cmap_ms
+from module.colormap import wind_speed_cmap_kt
 
 
 class DrawGriddataMap:
@@ -68,8 +67,19 @@ class DrawGriddataMap:
             self.uwind = kwargs['uwind']
         if 'vwind' in kwargs:
             self.vwind = kwargs['vwind']
+            
+    def mask_sea_gfe1km(self):
+        sea_mask = np.zeros(301875, '?')
+        with open(f'{self.ref_dir}/gfe0p01d_land_sea.txt') as fid:
+            fid.readline()
+            for iline, line in enumerate(fid):
+                if int(line.split()[4]) == 0:
+                    sea_mask[iline] = True
+        self.values = self.values.reshape(-1)
+        self.values[sea_mask] = np.nan
+        self.values = self.values.reshape(525, 575)
         
-    def set_info(self, product, parameter, init_date, lead_time_start, lead_time_end=None):
+    def set_info(self, product, parameter, init_date, lead_time_start=-1, lead_time_end=None):
         self.product = product
         self.parameter = parameter
         self.lead_time_start = lead_time_start
