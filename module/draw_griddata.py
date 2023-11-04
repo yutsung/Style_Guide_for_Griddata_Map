@@ -100,6 +100,12 @@ class DrawGriddataMap:
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
         ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
         return fig, ax
+
+    def _init_zoom_in_figure_axes(self):
+        fig = plt.figure(figsize=(6, 7.5))
+        ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
+        ax.set_extent([119.1, 122.1, 21.7, 25.5], ccrs.PlateCarree())
+        return fig, ax
     
     def _add_coast(self, ax):
         ax.add_feature(self.shape_feature_tw)
@@ -173,5 +179,52 @@ class DrawGriddataMap:
                 f'total water : {int(self.total_water//1e6)} x $10^6 m^3$',
                 fontsize=16
             )
+        plt.savefig(out_path)
+        plt.close()
+
+    def draw_zoom_in(self, out_path, cmap_name):
+        mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
+        fig, ax = self._init_zoom_in_figure_axes()
+        ax = self._add_coast(ax)
+        ax = self._add_map_gridlines(ax)
+        
+        ax_k = fig.add_axes((0.12, 0.14, 0.2, 1), projection=ccrs.PlateCarree())
+        ax_k.set_extent([118.05, 118.55, 24.3, 24.6])
+        ax_k.add_feature(self.shape_feature_tw)
+
+        ax_m = fig.add_axes((0.12, 0.295, 0.2, 1), projection=ccrs.PlateCarree())
+        ax_m.set_extent([119.8, 120.3, 25.9, 26.4])
+        ax_m.add_feature(self.shape_feature_tw)
+
+        ax.set_title(self.title, fontsize=16)
+
+        pcolor_cs = ax.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
+        pcolor_k_cs = ax_k.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
+        pcolor_m_cs = ax_m.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
+        pcolor_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_cs.cmap.set_over(cmap_dict['color_over'])
+        pcolor_k_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_k_cs.cmap.set_over(cmap_dict['color_over'])
+        pcolor_m_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_m_cs.cmap.set_over(cmap_dict['color_over'])
+
+        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        cbar = fig.colorbar(
+            pcolor_cs, 
+            cax=cbar_ax, 
+            extend='both', 
+            ticks=cmap_dict['boundary']
+        )
+        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict)
+
         plt.savefig(out_path)
         plt.close()
