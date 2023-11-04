@@ -45,6 +45,13 @@ def main():
     Draw_obj.mask_sea_gfe1km()
     Draw_obj.set_info('ECDCA', 'max-T', init_date, 24, 36)
     Draw_obj.draw('tmax_mask_demo.png', 'temperature')
+
+    Draw_obj = DrawGriddataMap(coast_width=0.6)
+    Draw_obj.put_latlon(lat, lon)
+    Draw_obj.put_data(tmax)
+    Draw_obj.mask_sea_gfe1km()
+    Draw_obj.set_info('ECDCA', 'max-T', init_date, 24, 36)
+    Draw_obj.draw_zoom_in('tmax_zoom_in_demo.png', 'temperature')
     
     Draw_obj = DrawGriddataMap(china_coast=False)
     Draw_obj.put_latlon(lat, lon)
