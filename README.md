@@ -90,8 +90,12 @@ Draw_obj.put_data(tmax)
 Draw_obj.set_info('ECDCA', 'max-T', init_date, 24, 36)
 ```
 5. 運行繪圖  
-第一個欄位是圖片輸出路徑與名稱，第二個欄位是色階在設定檔裡面的名稱
+有draw與draw_zoom_in兩個方法可使用，繪製的範圍稍有不同，  
+兩個方法的第一個欄位是圖片輸出路徑與名稱，第二個欄位是色階在設定檔裡面的名稱，  
+第三個欄位是`draw_barbs`預設是False，改成True可以疊上風標圖(步驟3要匯入風速)，  
+若使用draw_zoom_in方法，則無風標圖可使用
 ```python
 Draw_obj.draw('tmax_demo.png', 'temperature')
+Draw_obj.draw_zoom_in('tmax_demo.png', 'temperature')
 ```
 
