@@ -79,17 +79,19 @@ class DrawGriddataMap:
         self.values[sea_mask] = np.nan
         self.values = self.values.reshape(525, 575)
         
-    def set_info(self, product, parameter, init_date, lead_time_start=-1, lead_time_end=None):
+    def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None):
         self.product = product
         self.parameter = parameter
         self.lead_time_start = lead_time_start
-        self.lead_time_end = lead_time_end
-        if lead_time_start == lead_time_end:
-            lead_time_str = f'+{lead_time_end}h'
-        elif lead_time_start == -1:
+        self.lead_time_end = lead_time_end            
+        if lead_time_start == -999:
             lead_time_str = ''
         else:
-            lead_time_str = f'+({lead_time_start}-{lead_time_end}h)'
+            if (lead_time_end == None) or (lead_time_start == lead_time_end):
+                lead_time_str = f'+{lead_time_start}h'
+            else:
+                lead_time_str = f'+({lead_time_start}-{lead_time_end}h)'
+            
         self.title = (
             f'{self.product} {self.parameter} : '
             f'{init_date.strftime("%Y%m%d_%H%M")}{lead_time_str}'
