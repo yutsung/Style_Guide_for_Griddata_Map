@@ -42,7 +42,7 @@ class DrawGriddataMap:
         
     def _load_shapefile(self, linewidth):
         self.shape_feature_tw = cfeature.ShapelyFeature(
-            shpreader.Reader(f'{self.ref_dir}/gadm36_TWN_shp/gadm36_TWN_2').geometries(),
+            shpreader.Reader(f'{self.ref_dir}/TW_10908_TWD97/COUNTY_MOI_1090820').geometries(),
             ccrs.PlateCarree(), 
             facecolor='none',
             linewidth=linewidth
@@ -69,8 +69,11 @@ class DrawGriddataMap:
             self.vwind = kwargs['vwind']
             
     def mask_sea_gfe1km(self):
+        self.mask_sea_gfe1km_v1()
+            
+    def mask_sea_gfe1km_v1(self):
         sea_mask = np.zeros(301875, '?')
-        with open(f'{self.ref_dir}/gfe0p01d_land_sea.txt') as fid:
+        with open(f'{self.ref_dir}/GFE0p01d_v1.txt') as fid:
             fid.readline()
             for iline, line in enumerate(fid):
                 if int(line.split()[4]) == 0:
