@@ -12,8 +12,6 @@ import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from module.load_demo import load_demo_ref
-from module.load_demo import load_demo_qpf, load_demo_tmax, load_demo_wind
 from module.colormap import from_colorlist_to_cmap_norm
 from module.colormap import wind_speed_cmap_kt
 
@@ -68,6 +66,21 @@ class DrawGriddataMap:
         if 'vwind' in kwargs:
             self.vwind = kwargs['vwind']
             
+    def gfe1km_v2_get_total_water(self):
+        dlon_degree=0.01
+        dlat_degree=0.01
+        self._load_mask_gfe1km_v2()
+        qpf = self.values.copy().reshape(-1)
+        qpf[self.v2_mask] = np.nan   
+        radius_km = 6371
+        radius = radius_km * 1000
+        area = (
+            (dlat_degree * np.pi/180 * radius) 
+            * (dlon_degree * np.pi/180 * radius) 
+            * np.cos(self.lat * np.pi/180)
+        )
+        self.total_water = np.nansum(qpf * area.reshape(-1))*1e-3
+            
     def mask_sea_gfe1km(self):
         self.mask_sea_gfe1km_v1()
             
@@ -81,6 +94,29 @@ class DrawGriddataMap:
         self.values = self.values.reshape(-1)
         self.values[sea_mask] = np.nan
         self.values = self.values.reshape(525, 575)
+        
+    def _load_mask_gfe1km_v2_bk(self):
+        sea_mask = np.zeros(407281, '?')
+        with open(f'{self.ref_dir}/GFE0p01d_v2.txt') as fid:
+            fid.readline()
+            for iline, line in enumerate(fid):
+                if int(line.split()[4]) == 0:
+                    sea_mask[iline] = True
+        self.v2_mask = sea_mask
+        
+    def _load_mask_gfe1km_v2(self):
+        sea_mask = np.zeros(407281, '?')
+        with open(f'{self.ref_dir}/GFEGridInfo_1km_Ext.txt') as fid:
+            for iline, line in enumerate(fid):
+                if line.split()[5] == 'False':
+                    sea_mask[iline] = True
+        self.v2_mask = sea_mask
+        
+    def mask_sea_gfe1km_v2(self):
+        self._load_mask_gfe1km_v2()
+        self.values = self.values.reshape(-1)
+        self.values[self.v2_mask] = np.nan
+        self.values = self.values.reshape(581, 701)
         
     def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None):
         self.product = product
@@ -112,27 +148,33 @@ class DrawGriddataMap:
         ax.set_extent([119.1, 122.1, 21.7, 25.5], ccrs.PlateCarree())
         return fig, ax
     
+    def _init_zoom_out_figure_axes(self):
+        fig = plt.figure(figsize=(9.4, 7.6))
+        ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
+        ax.set_extent([117, 124, 21.2, 27], ccrs.PlateCarree())
+        return fig, ax
+    
     def _add_coast(self, ax):
         ax.add_feature(self.shape_feature_tw)
         if self.china_coast:
             ax.add_feature(self.shape_feature_ch)
         return ax
     
-    def _add_map_gridlines(self, ax):
+    def _add_map_gridlines(self, ax, fontsize=12):
         gd0 = ax.gridlines(draw_labels=True, alpha=0.5, linestyle=':')
         gd0.top_labels = False
         gd0.right_labels = False
-        gd0.xlocator = mticker.FixedLocator([118, 119, 120, 121, 122])
+        gd0.xlocator = mticker.FixedLocator([118, 119, 120, 121, 122, 123])
         gd0.ylocator = mticker.FixedLocator([22, 23, 24, 25, 26])
         gd0.xformatter = LONGITUDE_FORMATTER
         gd0.yformatter = LATITUDE_FORMATTER
-        gd0.xlabel_style = {'size': 12}
-        gd0.ylabel_style = {'size': 12}
+        gd0.xlabel_style = {'size': fontsize}
+        gd0.ylabel_style = {'size': fontsize}
         return ax
     
-    def _set_colorbar_title_ticklabels(self, cbar, cmap_dict):
+    def _set_colorbar_title_ticklabels(self, cbar, cmap_dict, ticksize=6):
         cbar.ax.set_yticklabels(cmap_dict['ticklabels'])
-        cbar.ax.tick_params(size=0, labelsize=6)
+        cbar.ax.tick_params(size=0, labelsize=ticksize)
         cbar.ax.set_title(
             cmap_dict['unit'],
             fontsize=12,
@@ -155,7 +197,7 @@ class DrawGriddataMap:
         cs_barbs.cmap.set_over(color_over)
         return ax
     
-    def draw(self, out_path, cmap_name, draw_barbs=False): 
+    def draw(self, out_path, cmap_name, draw_barbs=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
         fig, ax = self._init_figure_axes()
         ax = self._add_coast(ax)
@@ -231,5 +273,32 @@ class DrawGriddataMap:
         )
         cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict)
 
+        plt.savefig(out_path)
+        plt.close()
+        
+    def draw_zoom_out(self, out_path, cmap_name, draw_barbs=False):
+        mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
+        fig, ax = self._init_zoom_out_figure_axes()
+        ax = self._add_coast(ax)
+        ax = self._add_map_gridlines(ax, fontsize=14)
+        ax.set_title(self.title, fontsize=18)
+        pcolor_cs = ax.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
+        pcolor_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_cs.cmap.set_over(cmap_dict['color_over'])
+        cbar_ax = fig.add_axes([0.94, 0.08, 0.02, 0.62])
+        cbar = fig.colorbar(
+            pcolor_cs, 
+            cax=cbar_ax, 
+            extend='both', 
+            ticks=cmap_dict['boundary']
+        )
+        cbar = self._set_colorbar_title_ticklabels(
+            cbar, 
+            cmap_dict, 
+            ticksize=8
+        )
         plt.savefig(out_path)
         plt.close()
