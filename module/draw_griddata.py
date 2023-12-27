@@ -10,10 +10,42 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from module.colormap import from_colorlist_to_cmap_norm
-from module.colormap import wind_speed_cmap_kt
+
+def from_colorlist_to_cmap_norm(boundary, hex_list):
+    colorlist = []
+    for hex in hex_list:
+        colorlist.append(matplotlib.colors.to_rgb(hex))
+    n_bin = len(colorlist)
+    cmap_name = 'precipitation'
+    mycmap = LinearSegmentedColormap.from_list(
+        cmap_name,
+        colorlist,
+        N=n_bin
+    )
+    mynorm = matplotlib.colors.BoundaryNorm(boundary, n_bin)
+    return mycmap, mynorm
+
+
+def wind_speed_cmap_kt():
+    color_under = '#ffffff'
+    color_over = '#1e0a0a'
+    boundary = [
+        0.5, 1.0, 4.0, 7.0, 11.0, 
+        17.0, 22.0, 28.0, 34.0, 41.0, 
+        48.0, 56.0, 64.0, 72.0, 81.0, 
+        90.0, 100.0, 109., 119.0
+    ]
+    hex_list = [
+        '#e6e6e6', '#d3d3d3', '#979797', '#646464', '#96d2fa', 
+        '#1464d5', '#34d53a', '#ffe87c', '#ffa001', '#ff1500', 
+        '#820000', '#663e32', '#b48c82', '#ffc8c8', '#e68282', 
+        '#d45050', '#641616' ,'#321414', 
+    ]
+    mycmap, mynorm = from_colorlist_to_cmap_norm(boundary, hex_list)
+    return mycmap, mynorm, boundary, color_under, color_over
 
 
 class DrawGriddataMap:
@@ -94,15 +126,6 @@ class DrawGriddataMap:
         self.values = self.values.reshape(-1)
         self.values[sea_mask] = np.nan
         self.values = self.values.reshape(525, 575)
-        
-    def _load_mask_gfe1km_v2_bk(self):
-        sea_mask = np.zeros(407281, '?')
-        with open(f'{self.ref_dir}/GFE0p01d_v2.txt') as fid:
-            fid.readline()
-            for iline, line in enumerate(fid):
-                if int(line.split()[4]) == 0:
-                    sea_mask[iline] = True
-        self.v2_mask = sea_mask
         
     def _load_mask_gfe1km_v2(self):
         sea_mask = np.zeros(407281, '?')
