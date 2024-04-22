@@ -160,15 +160,15 @@ class DrawGriddataMap:
         )
         
     def _init_figure_axes(self):
-        fig = plt.figure(figsize=(6, 7))
-        ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
+        fig = plt.figure(figsize=(6.2, 7))
+        ax = fig.add_axes((0.078, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
         ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
         return fig, ax
 
     def _init_zoom_in_figure_axes(self):
         fig = plt.figure(figsize=(6, 7.5))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
-        ax.set_extent([119.1, 122.1, 21.7, 25.5], ccrs.PlateCarree())
+        ax.set_extent([119.2, 122.1, 21.7, 25.5], ccrs.PlateCarree())
         return fig, ax
     
     def _init_zoom_out_figure_axes(self):
@@ -232,7 +232,7 @@ class DrawGriddataMap:
         )
         pcolor_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_cs.cmap.set_over(cmap_dict['color_over'])
-        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        cbar_ax = fig.add_axes([0.935, 0.09, 0.018, 0.52])
         cbar = fig.colorbar(
             pcolor_cs, 
             cax=cbar_ax, 
@@ -287,7 +287,7 @@ class DrawGriddataMap:
         pcolor_m_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_m_cs.cmap.set_over(cmap_dict['color_over'])
 
-        cbar_ax = fig.add_axes([0.942, 0.09, 0.02, 0.52])
+        cbar_ax = fig.add_axes([0.929, 0.09, 0.02, 0.52])
         cbar = fig.colorbar(
             pcolor_cs, 
             cax=cbar_ax, 
@@ -311,7 +311,7 @@ class DrawGriddataMap:
         )
         pcolor_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_cs.cmap.set_over(cmap_dict['color_over'])
-        cbar_ax = fig.add_axes([0.94, 0.08, 0.02, 0.62])
+        cbar_ax = fig.add_axes([0.94, 0.08, 0.016, 0.62])
         cbar = fig.colorbar(
             pcolor_cs, 
             cax=cbar_ax, 
