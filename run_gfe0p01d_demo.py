@@ -13,20 +13,20 @@ def main():
     Draw_obj.put_latlon(lat, lon)
     Draw_obj.put_data(alt)
     Draw_obj.set_info('GFE', 'ALT', init_date)
-    Draw_obj.draw('alt_demo.webp', 'elevation')
+    Draw_obj.draw('alt_demo.webp', 'elevation', draw_max_tw=True)
     
     Draw_obj = DrawGriddataMap()
     Draw_obj.put_latlon(lat, lon)
     Draw_obj.put_data(alt)
     Draw_obj.set_info('GFE', 'ALT', init_date)
-    Draw_obj.draw_zoom_out('alt_zoom_out_demo.webp', 'elevation')
+    Draw_obj.draw_zoom_out('alt_zoom_out_demo.webp', 'elevation', draw_max_tw=True)
     
     Draw_obj = DrawGriddataMap()
     Draw_obj.put_latlon(lat, lon)
     Draw_obj.put_data(alt)
     Draw_obj.set_info('GFE', 'ALT', init_date)
-    Draw_obj.mask_sea_gfe1km_v2()
-    Draw_obj.draw_zoom_in('alt_zoom_in_demo.webp', 'elevation')
+    Draw_obj.mask_sea_gfe1km()
+    Draw_obj.draw_zoom_in('alt_zoom_in_demo.webp', 'elevation', draw_max_tw=True)
 
     
 if __name__ == '__main__':
