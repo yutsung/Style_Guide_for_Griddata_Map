@@ -1,11 +1,16 @@
 # Style Guide for Griddata Map
 根據中心的需求，希望我們配合[樣板](https://docs.google.com/document/d/1b1dGYjO1mGeYgrPQK3_8sWPZ6pVscdeSx42hC0UKyFY/edit)，  
-制定並生產公版模組，上述文件中已經有雨、溫、風的色階指引，其餘的還在擴充中，  
+制定並生產公版模組，上述文件中已包含部分因子的色階指引，可直接使用或自行從設定檔擴充，  
 因為是統一格式，所以希望大家把意見彙集成一份模組就好，  
-我目前先做了一個未臻完善的初稿，我有開權限給大家，歡迎翻閱取用與回饋  
+目前有開權限給大家，歡迎翻閱取用與回饋  
 
 目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
 我放置在資料夾demo_from_cwa之中，請自行翻閱
+
+# 2024/04/23 更新摘要
+1. 預設移除外傘頂洲，可由`DrawGriddataMap(caisancho=True)`補回  
+2. 新增功能，可在圖上標出最大值位置與數值，可使用`Draw_obj.draw(..., draw_max=True)`呼叫，或者`Draw_obj.draw(..., draw_max=True)`只標示台灣陸地最大值  
+3. 微調圖框比例，解決原本colorbar超過4位數的數字會被切掉的問題  
 
 
 ## 測試環境版本
@@ -61,10 +66,10 @@ numpy 1.26.1
 }
 ```
 1. 初始化繪圖工具  
-從模組中匯入`DrawGriddataMap`，再將其初始化，初始化欄位有三個可以填寫，以下是名稱與預設值，    
-`ref_dir='ref', china_coast=True, coast_width=0.8`，第一個是參考資料夾的位子，  
-第二個是是否要繪製中國海岸線，不繪製可以加速，最後一個是海岸線粗細，篇粗會不容易看清離島的數值，  
-篇細會影響本島縣市的判讀。
+從模組中匯入`DrawGriddataMap`，再將其初始化，初始化欄位有四個可以填寫，以下是名稱與預設值，  
+`ref_dir='ref', china_coast=True, coast_width=0.8, caisancho=False`，第一個是參考資料夾的位子，  
+第二個是是否要繪製中國海岸線，不繪製可以加速，第三個是海岸線粗細，偏粗會不容易看清離島的數值，  
+偏細會影響本島縣市的判讀，最後一個是是否繪製外傘頂洲。
 ```python
 from module.draw_griddata import DrawGriddataMap
 Draw_obj = DrawGriddataMap()
@@ -90,12 +95,14 @@ Draw_obj.put_data(tmax)
 Draw_obj.set_info('ECDCA', 'max-T', init_date, 24, 36)
 ```
 5. 運行繪圖  
-有draw與draw_zoom_in兩個方法可使用，繪製的範圍稍有不同，  
-兩個方法的第一個欄位是圖片輸出路徑與名稱，第二個欄位是色階在設定檔裡面的名稱，  
+有draw, draw_zoom_in, draw_zoom_out三個方法可使用，繪製的範圍不同，  
+上述方法的第一個欄位是圖片輸出路徑與名稱，第二個欄位是色階在設定檔裡面的名稱，  
 第三個欄位是`draw_barbs`預設是False，改成True可以疊上風標圖(步驟3要匯入風速)，  
 若使用draw_zoom_in方法，則無風標圖可使用
 ```python
+Draw_obj.mask_sea_gfe1km() # 若要不繪製非圖資範圍的顏色，非必要
 Draw_obj.draw('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_in('tmax_demo.png', 'temperature')
+Draw_obj.draw_zoom_out('tmax_demo.png', 'temperature')
 ```
 
