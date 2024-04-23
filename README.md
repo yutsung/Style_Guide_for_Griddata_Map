@@ -9,7 +9,10 @@
 
 # 2024/04/23 更新摘要
 1. 預設移除外傘頂洲，可由`DrawGriddataMap(caisancho=True)`補回  
-2. 新增功能，可在圖上標出最大值位置與數值，可使用`Draw_obj.draw(..., draw_max=True)`呼叫，或者`Draw_obj.draw(..., draw_max=True)`只標示台灣陸地最大值  
+2. 新增功能，可在圖上標出最大值位置與數值，  
+   可使用`Draw_obj.draw(..., draw_max=True)`呼叫，  
+   或者`Draw_obj.draw(..., draw_max_tw=True)`只標示台灣陸地最大值，  
+   還有`Draw_obj.draw(..., draw_max_main=True)`標示台澎金馬蘭嶼綠島等有一定面積的陸地區域  
 3. 微調圖框比例，解決原本colorbar超過4位數的數字會被切掉的問題  
 
 
