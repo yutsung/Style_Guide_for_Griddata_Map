@@ -12,6 +12,7 @@ import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from shapely import MultiPolygon, Point
 
 
 def from_colorlist_to_cmap_norm(boundary, hex_list):
@@ -50,10 +51,11 @@ def wind_speed_cmap_kt():
 
 class DrawGriddataMap:
     
-    def __init__(self, ref_dir='ref', china_coast=True, coast_width=0.8):
+    def __init__(self, ref_dir='ref', china_coast=True, coast_width=0.8, caisancho=False):
         self.ref_dir = ref_dir
         self.china_coast = china_coast
-        self._load_shapefile(coast_width)
+        self.caisancho = caisancho
+        self._load_shapefile(coast_width, caisancho=caisancho)
         self._pre_load_colorset_file()
         
     def _pre_load_colorset_file(self):
@@ -68,15 +70,41 @@ class DrawGriddataMap:
         )
         if '$degree$' in cmap_dict['unit']:
             cmap_dict['unit'] = cmap_dict['unit'].replace('$degree$', '$^\circ$')
+        if 'rac{W}{m^2}$' in cmap_dict['unit']:
+            cmap_dict['unit'] = r'$\frac{W}{m^2}$'
         return mycmap, mynorm, cmap_dict
+    
+    def remove_caisancho_in_shapefile(self):
+        new_geoms = ()
+        for poly_obj in self.shape_feature_tw._geoms:
+            if type(poly_obj) == MultiPolygon:
+                new_multipolygon = ()
+                for one_poly in poly_obj.geoms:
+                    if not (
+                        one_poly.contains(Point(120.03, 23.48)) 
+                        | one_poly.contains(Point(120.11, 23.55)) 
+                        | one_poly.contains(Point(120.1, 23.54))
+                    ):
+                        new_multipolygon += (one_poly,)
+                new_geoms += (MultiPolygon(new_multipolygon),)
+            else:
+                if not (
+                    one_poly.contains(Point(120.03, 23.48)) 
+                    | one_poly.contains(Point(120.11, 23.55)) 
+                    | one_poly.contains(Point(120.1, 23.54))
+                ):
+                    new_geoms += (poly_obj,)
+        self.shape_feature_tw._geoms = new_geoms
         
-    def _load_shapefile(self, linewidth):
+    def _load_shapefile(self, linewidth, caisancho):
         self.shape_feature_tw = cfeature.ShapelyFeature(
             shpreader.Reader(f'{self.ref_dir}/TW_10908_TWD97/COUNTY_MOI_1090820').geometries(),
             ccrs.PlateCarree(), 
             facecolor='none',
             linewidth=linewidth
         )
+        if not caisancho:
+            self.remove_caisancho_in_shapefile()                
         if self.china_coast:
             self.shape_feature_ch = cfeature.ShapelyFeature(
                 shpreader.Reader(f'{self.ref_dir}/CHN_adm/CHN_adm1').geometries(),
@@ -113,32 +141,48 @@ class DrawGriddataMap:
         )
         self.total_water = np.nansum(qpf * area.reshape(-1))*1e-3
             
-    def mask_sea_gfe1km(self):
-        self.values = self.mask_sea_gfe1km_func(self.values)                
+    def mask_sea_gfe1km(self, tw_land_only=False, caisancho=False):
+        self.values = self.mask_sea_gfe1km_func(
+            self.values, 
+            tw_land_only=tw_land_only,
+            caisancho=caisancho
+        )
 
-    def mask_sea_gfe1km_func(self, values_in):
+    def mask_sea_gfe1km_func(self, values_in, tw_land_only=False, caisancho=False):
         self._load_mask_gfe1km()        
         if values_in.size == 301875: # v1
             shape_0 = 525
             shape_1 = 575
-            sea_mask = self.v1_mask            
+            sea_mask = self.v1_mask
+            offshore_islands = self.v1_offshore_islands
         elif values_in.size == 407281: # v2
             shape_0 = 581
             shape_1 = 701
             sea_mask = self.v2_mask
+            offshore_islands = self.v2_offshore_islands
         values_out = values_in.copy().reshape(-1)
-        values_out[sea_mask] = np.nan    
-        values_out = values_out.reshape(shape_0, shape_1)
+        values_out[sea_mask] = np.nan
+        if not caisancho:
+            values_out[offshore_islands==3] = np.nan
+        if tw_land_only:
+            values_out[offshore_islands!=1] = np.nan
+        values_out = values_out.reshape(shape_0, shape_1)                    
         return values_out
         
     def _load_mask_gfe1km(self):
         self.v1_mask = np.zeros(301875, '?')
         self.v2_mask = np.zeros(407281, '?')
+        self.v1_offshore_islands = np.zeros(301875, 'i4')
+        self.v2_offshore_islands = np.zeros(407281, 'i4')
         with open(f'{self.ref_dir}/GFEGridInfo_1km_Ext.txt') as fid:
             for iline, line in enumerate(fid):
                 if line.split()[5] == 'False':
                     self.v2_mask[iline] = True
         self.v1_mask[:] = self.v2_mask.reshape(581, 701)[28:553, 78:653].reshape(-1)
+        with open(f'{self.ref_dir}/GFEGridInfo_1km_Ext_OI.txt') as fid:
+            for iline, line in enumerate(fid):
+                self.v2_offshore_islands[iline] = int(line.split()[5])
+        self.v1_offshore_islands[:] = self.v2_offshore_islands.reshape(581, 701)[28:553, 78:653].reshape(-1)
         
     def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None):
         self.product = product
@@ -220,15 +264,7 @@ class DrawGriddataMap:
         return ax
     
     def _mark_max_on_tw(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
-        values = self.mask_sea_gfe1km_func(values)
-        lon_119p9_idx = np.argmin(np.abs(self.lon[0, :] - 119.9))
-        lon_122p1_idx = np.argmin(np.abs(self.lon[0, :] - 122.1))
-        lat_21p5_idx = np.argmin(np.abs(self.lat[:, 0] - 21.5))
-        lat_25p7_idx = np.argmin(np.abs(self.lat[:, 0] - 25.7))
-        values[:lat_21p5_idx, :] = np.nan
-        values[lat_25p7_idx:, :] = np.nan
-        values[:, lon_122p1_idx:] = np.nan
-        values[:, :lon_119p9_idx] = np.nan
+        values = self.mask_sea_gfe1km_func(values, tw_land_only=True)
         ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2)
         return ax            
     
