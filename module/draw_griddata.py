@@ -141,14 +141,15 @@ class DrawGriddataMap:
         )
         self.total_water = np.nansum(qpf * area.reshape(-1))*1e-3
             
-    def mask_sea_gfe1km(self, tw_land_only=False, caisancho=False):
+    def mask_sea_gfe1km(self, main_region_only=False, tw_land_only=False, caisancho=False):
         self.values = self.mask_sea_gfe1km_func(
             self.values, 
+            main_region_only=main_region_only,
             tw_land_only=tw_land_only,
             caisancho=caisancho
         )
 
-    def mask_sea_gfe1km_func(self, values_in, tw_land_only=False, caisancho=False):
+    def mask_sea_gfe1km_func(self, values_in, main_region_only=False, tw_land_only=False, caisancho=False):
         self._load_mask_gfe1km()        
         if values_in.size == 301875: # v1
             shape_0 = 525
@@ -164,6 +165,9 @@ class DrawGriddataMap:
         values_out[sea_mask] = np.nan
         if not caisancho:
             values_out[offshore_islands==3] = np.nan
+        if main_region_only:
+            values_out[offshore_islands==3] = np.nan
+            values_out[offshore_islands==4] = np.nan
         if tw_land_only:
             values_out[offshore_islands!=1] = np.nan
         values_out = values_out.reshape(shape_0, shape_1)                    
@@ -266,7 +270,12 @@ class DrawGriddataMap:
     def _mark_max_on_tw(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
         values = self.mask_sea_gfe1km_func(values, tw_land_only=True)
         ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2)
-        return ax            
+        return ax
+    
+    def _mark_max_on_main(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
+        values = self.mask_sea_gfe1km_func(values, main_region_only=True)
+        ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2)
+        return ax
     
     def _mark_max_on_map(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
         max_value = np.nanmax(values)
@@ -285,7 +294,7 @@ class DrawGriddataMap:
                         mark_str, fontsize=mark_fontsize, color="k")
         return ax            
     
-    def draw(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False):
+    def draw(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
         fig, ax = self._init_figure_axes()
         ax = self._add_coast(ax)
@@ -316,12 +325,14 @@ class DrawGriddataMap:
             )
         if draw_max:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
+        if draw_max_main:
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
         if draw_max_tw:
             ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
         plt.savefig(out_path)
         plt.close()
 
-    def draw_zoom_in(self, out_path, cmap_name, draw_max=False, draw_max_tw=False):
+    def draw_zoom_in(self, out_path, cmap_name, draw_max=False, draw_max_tw=False, draw_max_main=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
         fig, ax = self._init_zoom_in_figure_axes()
         ax = self._add_coast(ax)
@@ -366,12 +377,20 @@ class DrawGriddataMap:
         cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict)
         if draw_max:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
+            ax_k = self._mark_max_on_map(ax_k, self.values, 15, 12, 19)
+            ax_m = self._mark_max_on_map(ax_m, self.values, 15, 12, 19)
+        if draw_max_main:
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
+            ax_k = self._mark_max_on_main(ax_k, self.values, 15, 12, 19)
+            ax_m = self._mark_max_on_main(ax_m, self.values, 15, 12, 19)
         if draw_max_tw:
             ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
+            ax_k = self._mark_max_on_tw(ax_k, self.values, 15, 12, 19)
+            ax_m = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19)
         plt.savefig(out_path)
         plt.close()
         
-    def draw_zoom_out(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False):
+    def draw_zoom_out(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
         fig, ax = self._init_zoom_out_figure_axes()
         ax = self._add_coast(ax)
@@ -397,6 +416,8 @@ class DrawGriddataMap:
         )
         if draw_max:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
+        if draw_max_main:
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
         if draw_max_tw:
             ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
         plt.savefig(out_path)
