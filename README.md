@@ -34,6 +34,7 @@ numpy 1.26.1
 ## 使用說明
 基本上是操作`module`內的`draw_griddata.py`  
 操作方式也可以參考`module`內的`load_demo.py`  
+還有要複製ref裡面需要的參考檔。  
   
 0. 增加色階設定
 下方的例子中，共有50個色階，最低跟最高的色碼設定在`color_under`與`color_over`，  
