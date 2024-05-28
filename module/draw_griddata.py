@@ -1,5 +1,6 @@
 import datetime
 import json
+from decimal import Decimal, ROUND_HALF_UP
 
 import cartopy
 import cartopy.crs as ccrs
@@ -14,6 +15,18 @@ from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from shapely import MultiPolygon, Point
 
+
+def round_v3(num, decimal=0):
+    """ https://pcchencode.medium.com/
+        [Python] round() 四捨五入…的小坑
+    """
+    str_deci = 1
+    for _ in range(decimal):
+        str_deci = str_deci / 10
+    str_deci = str(str_deci)
+    result = Decimal(str(num)).quantize(Decimal(str_deci), rounding=ROUND_HALF_UP)
+    result = float(result)
+    return result
 
 def from_colorlist_to_cmap_norm(boundary, hex_list):
     colorlist = []
@@ -280,7 +293,7 @@ class DrawGriddataMap:
     def _mark_max_on_map(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
         max_value = np.nanmax(values)
         y_points_idx, x_points_idx = np.where(values==max_value)
-        mark_str = str(np.round(max_value, 1))
+        mark_str = str(int(round_v3(max_value)))
         if (len(x_points_idx) > 0) & (max_value > action_threshold):
             for x_idx, y_idx in zip(x_points_idx, y_points_idx):
                 ax.plot(

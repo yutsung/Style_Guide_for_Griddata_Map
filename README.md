@@ -7,6 +7,9 @@
 目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
 我放置在資料夾demo_from_cwa之中，請自行翻閱
 
+# 2024/05/28 更新摘要
+1. 圖上最大值四捨五入到整數位
+
 # 2024/04/23 更新摘要
 1. 預設移除外傘頂洲，可由`DrawGriddataMap(caisancho=True)`補回  
 2. 新增功能，可在圖上標出最大值位置與數值，  
@@ -29,12 +32,15 @@ matplotlib 3.8.0
 numpy 1.26.1  
 
 ## 使用說明
+基本上是操作`module`內的`draw_griddata.py`  
+操作方式也可以參考`module`內的`load_demo.py`  
+  
 0. 增加色階設定
 下方的例子中，共有50個色階，最低跟最高的色碼設定在`color_under`與`color_over`，  
 其餘的48個色階設定在`hex_list`，然後48個色階會有49個邊界設定在`boundary`，  
 以及這49個邊界的文字標籤設定在`ticklabels`。  
 接著是單位的文字描述`unit`，以及文字坐落的位子，座標是以colorbar左下為基準，  
-範例中的`unit_xloc:1.05`、`unit_yloc:1.03`會約略在colorbar的正上方，略偏右
+範例中的`unit_xloc:1.05`、`unit_yloc:1.03`會約略在colorbar的正上方，略偏右  
 ```json
 {
     "temperature":{
@@ -72,7 +78,7 @@ numpy 1.26.1
 從模組中匯入`DrawGriddataMap`，再將其初始化，初始化欄位有四個可以填寫，以下是名稱與預設值，  
 `ref_dir='ref', china_coast=True, coast_width=0.8, caisancho=False`，第一個是參考資料夾的位子，  
 第二個是是否要繪製中國海岸線，不繪製可以加速，第三個是海岸線粗細，偏粗會不容易看清離島的數值，  
-偏細會影響本島縣市的判讀，最後一個是是否繪製外傘頂洲。
+偏細會影響本島縣市的判讀，最後一個是是否繪製外傘頂洲。  
 ```python
 from module.draw_griddata import DrawGriddataMap
 Draw_obj = DrawGriddataMap()
