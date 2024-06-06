@@ -139,12 +139,10 @@ class DrawGriddataMap:
         if 'vwind' in kwargs:
             self.vwind = kwargs['vwind']
             
-    def gfe1km_v2_get_total_water(self):
+    def calculate_gfe1km_total_water(self):
+        qpf = self.mask_sea_gfe1km_func(self.values, tw_land_only=True)
         dlon_degree=0.01
         dlat_degree=0.01
-        self._load_mask_gfe1km_v2()
-        qpf = self.values.copy().reshape(-1)
-        qpf[self.v2_mask] = np.nan   
         radius_km = 6371
         radius = radius_km * 1000
         area = (
@@ -152,7 +150,7 @@ class DrawGriddataMap:
             * (dlon_degree * np.pi/180 * radius) 
             * np.cos(self.lat * np.pi/180)
         )
-        self.total_water = np.nansum(qpf * area.reshape(-1))*1e-3
+        self.total_water = np.nansum(qpf.reshape(-1) * area.reshape(-1))*1e-3
             
     def mask_sea_gfe1km(self, main_region_only=False, tw_land_only=False, caisancho=False):
         self.values = self.mask_sea_gfe1km_func(
@@ -296,15 +294,19 @@ class DrawGriddataMap:
         mark_str = str(int(round_v3(max_value)))
         if (len(x_points_idx) > 0) & (max_value > action_threshold):
             for x_idx, y_idx in zip(x_points_idx, y_points_idx):
-                ax.plot(
-                    self.lon[y_idx, x_idx], 
-                    self.lat[y_idx, x_idx], 
-                    'k^', markersize=mark_size, markeredgewidth=2, markerfacecolor='None')
-                if (x_idx+mark_str_x_gap) < self.lon.shape[1]:
-                    ax.text(
-                        self.lon[y_idx, x_idx+mark_str_x_gap], 
-                        self.lat[y_idx, x_idx+mark_str_x_gap], 
-                        mark_str, fontsize=mark_fontsize, color="k")
+                if (
+                    (ax.get_xlim()[0] <= self.lon[y_idx, x_idx] <= ax.get_xlim()[1]) and 
+                    (ax.get_ylim()[0] <= self.lat[y_idx, x_idx] <= ax.get_ylim()[1])
+                ):
+                    ax.plot(
+                        self.lon[y_idx, x_idx], 
+                        self.lat[y_idx, x_idx], 
+                        'k^', markersize=mark_size, markeredgewidth=2, markerfacecolor='None')            
+                    if (x_idx+mark_str_x_gap) < self.lon.shape[1]:
+                        ax.text(
+                            self.lon[y_idx, x_idx+mark_str_x_gap], 
+                            self.lat[y_idx, x_idx+mark_str_x_gap], 
+                            mark_str, fontsize=mark_fontsize, color="k")
         return ax            
     
     def draw(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False):
@@ -332,7 +334,7 @@ class DrawGriddataMap:
             ax = self._add_barbs(ax)
         if 'total_water' in self.__dict__:
             ax.text(
-                119.7, 20.9, 
+                119.7, 20.92, 
                 f'total water : {int(self.total_water//1e6)} x $10^6 m^3$',
                 fontsize=16
             )

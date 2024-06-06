@@ -7,6 +7,11 @@
 目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
 我放置在資料夾demo_from_cwa之中，請自行翻閱
 
+# 2024/06/06 更新摘要
+1. 增加`calculate_gfe1km_total_water`方法，若資料是GFE1km網格點，可以用此方法計算total_water
+2. 解決total water的文字超出圖框的問題
+3. 解決draw_zoom_in時金馬小框的最大值文字出現在中間圖中的問題
+
 # 2024/05/28 更新摘要
 1. 圖上最大值四捨五入到整數位
 
