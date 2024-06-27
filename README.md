@@ -7,6 +7,10 @@
 目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
 我放置在資料夾demo_from_cwa之中，請自行翻閱
 
+# 2024/06/27 更新摘要
+1. 新增`draw_wind_barbs`方法，可繪製僅含風標圖的透明背景圖，圖框範圍與`draw`相同
+2. 新增`put_uwind_vwind`方法，可以僅匯入風標圖所需的uwind與vwind(單位為公尺每秒)
+
 # 2024/06/06 更新摘要
 1. 增加`calculate_gfe1km_total_water`方法，若資料是GFE1km網格點，可以用此方法計算total_water
 2. 解決total water的文字超出圖框的問題
@@ -120,4 +124,7 @@ Draw_obj.draw('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_in('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_out('tmax_demo.png', 'temperature')
 ```
-
+若僅要繪製透明背景的風標圖，可以使用，繪圖範圍與`draw`相同
+```python
+Draw_obj.draw_wind_barbs('wind_barbs_demo.png')
+```
