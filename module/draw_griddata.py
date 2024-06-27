@@ -130,14 +130,16 @@ class DrawGriddataMap:
         self.lat = lat
         self.lon = lon
         
+    def put_uwind_vwind(self, uwind, vwind):
+        self.uwind = uwind
+        self.vwind = vwind
+        
     def put_data(self, values, **kwargs):
         self.values = values
         if 'total_water' in kwargs:
             self.total_water = kwargs['total_water']
-        if 'uwind' in kwargs:
-            self.uwind = kwargs['uwind']
-        if 'vwind' in kwargs:
-            self.vwind = kwargs['vwind']
+        if ('uwind' in kwargs) and ('vwind' in kwargs):
+            self.put_uwind_vwind(kwargs['uwind'], kwargs['vwind'])
             
     def calculate_gfe1km_total_water(self):
         qpf = self.mask_sea_gfe1km_func(self.values, tw_land_only=True)
@@ -264,9 +266,8 @@ class DrawGriddataMap:
         )
         return cbar
     
-    def _add_barbs(self, ax):
+    def _add_barbs(self, ax, step=40):
         mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap_kt()
-        step = 40
         ws = np.sqrt(self.uwind**2 + self.vwind**2)
         cs_barbs = ax.barbs(
             self.lon[::step, ::step], self.lat[::step, ::step], 
@@ -437,3 +438,11 @@ class DrawGriddataMap:
             ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
         plt.savefig(out_path)
         plt.close()
+        
+    def draw_wind_barbs(self, out_path):
+        fig, ax = self._init_figure_axes()
+        ax = self._add_barbs(ax)
+        ax.axis('off')
+        plt.savefig(out_path, transparent=True)
+        plt.close()
+        
