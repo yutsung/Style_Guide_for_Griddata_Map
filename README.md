@@ -8,8 +8,8 @@
 我放置在資料夾demo_from_cwa之中，請自行翻閱
 
 # 2024/06/27 更新摘要
-1. 新增`draw_wind_barbs`方法，可繪製僅含風標圖的透明背景圖，圖框範圍與`draw`相同
-2. 新增`put_uwind_vwind`方法，可以僅匯入風標圖所需的uwind與vwind(單位為公尺每秒)
+1. 新增`draw_wind_barbs`方法，可繪製僅含風標圖的透明背景圖，圖框範圍與`draw`相同  
+2. 新增`put_uwind_vwind`方法，可以僅匯入風標圖所需的uwind與vwind(單位為公尺每秒)  
 
 # 2024/06/06 更新摘要
 1. 增加`calculate_gfe1km_total_water`方法，若資料是GFE1km網格點，可以用此方法計算total_water
@@ -94,7 +94,7 @@ from module.draw_griddata import DrawGriddataMap
 Draw_obj = DrawGriddataMap()
 ```
 2. 輸入網格點ARRAY  
-這裡的`lat`與`lon`都是二維的numpy array，單精度雙精度都可以使用
+這裡的`lat`與`lon`都是二維的numpy array，單精度雙精度都可以使用  
 ```python
 Draw_obj.put_latlon(lat, lon)
 ```
@@ -104,6 +104,10 @@ Draw_obj.put_latlon(lat, lon)
 當名稱是uwind跟vwind的時候，才能繪製風標圖
 ```python
 Draw_obj.put_data(tmax)
+```
+若只要繪製透明背景風標圖，可以使用以下方式只匯入風場資訊  
+```python
+Draw_obj.put_uwind_vwind(uwind, vwind)
 ```
 4. 設定標題  
 第一個欄位是生產的單位名稱或是產線名稱或是生產方式，  
@@ -124,7 +128,7 @@ Draw_obj.draw('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_in('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_out('tmax_demo.png', 'temperature')
 ```
-若僅要繪製透明背景的風標圖，可以使用，繪圖範圍與`draw`相同
+若僅要繪製透明背景的風標圖，可以使用，繪圖範圍與`draw`相同  
 ```python
 Draw_obj.draw_wind_barbs('wind_barbs_demo.png')
 ```
