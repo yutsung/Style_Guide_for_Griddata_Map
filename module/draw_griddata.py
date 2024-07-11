@@ -219,62 +219,107 @@ class DrawGriddataMap:
             f'{init_date.strftime("%Y%m%d_%H%M")}{lead_time_str}'
         )
         
-    def _init_figure_axes(self):
+    def _init_figure_axes(self, dark_mode=False):
         fig = plt.figure(figsize=(6.2, 7))
         ax = fig.add_axes((0.078, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
-        ax.set_extent([118, 122.5, 21.3, 26.5], ccrs.PlateCarree())
+        ax.set_extent([117.999, 122.5, 21.3, 26.5], ccrs.PlateCarree())
+        if dark_mode:
+            ax.set_facecolor('#000000')
+            fig.set_facecolor("#000000")
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#ffffff')
+            ax.title.set_color('#ffffff')
         return fig, ax
 
-    def _init_zoom_in_figure_axes(self):
+    def _init_zoom_in_figure_axes(self, dark_mode=False):
         fig = plt.figure(figsize=(6, 7.5))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
         ax.set_extent([119.2, 122.1, 21.7, 25.5], ccrs.PlateCarree())
+        if dark_mode:
+            ax.set_facecolor('#000000')
+            fig.set_facecolor("#000000")
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#ffffff')
+            ax.title.set_color('#ffffff')
         return fig, ax
     
-    def _init_zoom_out_figure_axes(self):
+    def _init_zoom_out_figure_axes(self, dark_mode=False):
         fig = plt.figure(figsize=(9.4, 7.6))
         ax = fig.add_axes((0.082, 0.064, 0.859, 0.873), projection=ccrs.PlateCarree())
-        ax.set_extent([117, 124, 21.2, 27], ccrs.PlateCarree())
+        ax.set_extent([116.999, 124, 21.2, 27], ccrs.PlateCarree())
+        if dark_mode:
+            ax.set_facecolor('#000000')
+            fig.set_facecolor("#000000")
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#ffffff')
+            ax.title.set_color('#ffffff')
         return fig, ax
     
-    def _add_coast(self, ax):
-        ax.add_feature(self.shape_feature_tw)
-        if self.china_coast:
-            ax.add_feature(self.shape_feature_ch)
+    def _add_coast(self, ax, dark_mode=False):
+        if dark_mode:
+            ax.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
+            if self.china_coast:
+                ax.add_feature(self.shape_feature_ch, edgecolor='#f7f48b', linewidth=1)
+        else:                            
+            ax.add_feature(self.shape_feature_tw)
+            if self.china_coast:
+                ax.add_feature(self.shape_feature_ch)
         return ax
     
-    def _add_map_gridlines(self, ax, fontsize=12):
-        gd0 = ax.gridlines(draw_labels=True, alpha=0.5, linestyle=':')
+    def _add_map_gridlines(self, ax, fontsize=12, dark_mode=False):
+        if dark_mode:
+            gd0 = ax.gridlines(draw_labels=True, alpha=0.8, linestyle=':', color='#ffffff', linewidth=1)
+            gd0.xlabel_style = {'size': fontsize, 'color': '#ffffff'}
+            gd0.ylabel_style = {'size': fontsize, 'color': '#ffffff'}
+        else:
+            gd0 = ax.gridlines(draw_labels=True, alpha=0.8, linestyle='--', linewidth=0.8)
+            gd0.xlabel_style = {'size': fontsize}
+            gd0.ylabel_style = {'size': fontsize}
         gd0.top_labels = False
         gd0.right_labels = False
-        gd0.xlocator = mticker.FixedLocator([118, 119, 120, 121, 122, 123])
+        gd0.xlocator = mticker.FixedLocator([117, 118, 119, 120, 121, 122, 123])
         gd0.ylocator = mticker.FixedLocator([22, 23, 24, 25, 26])
         gd0.xformatter = LONGITUDE_FORMATTER
         gd0.yformatter = LATITUDE_FORMATTER
-        gd0.xlabel_style = {'size': fontsize}
-        gd0.ylabel_style = {'size': fontsize}
         return ax
     
-    def _set_colorbar_title_ticklabels(self, cbar, cmap_dict, ticksize=6):
-        cbar.ax.set_yticklabels(cmap_dict['ticklabels'])
+    def _set_colorbar_title_ticklabels(self, cbar, cmap_dict, ticksize=6, dark_mode=False):
         cbar.ax.tick_params(size=0, labelsize=ticksize)
-        cbar.ax.set_title(
+        if dark_mode:
+            cbar.ax.set_yticklabels(cmap_dict['ticklabels'], color='#ffffff')
+            cbar.ax.set_title(
             cmap_dict['unit'],
-            fontsize=12,
-            x=cmap_dict['unit_xloc'],
-            y=cmap_dict['unit_yloc']
-        )
+                fontsize=12,
+                x=cmap_dict['unit_xloc'],
+                y=cmap_dict['unit_yloc'],
+                color='#ffffff'
+            )
+        else:
+            cbar.ax.set_yticklabels(cmap_dict['ticklabels'])
+            cbar.ax.set_title(
+                cmap_dict['unit'],
+                fontsize=12,
+                x=cmap_dict['unit_xloc'],
+                y=cmap_dict['unit_yloc']
+            )
         return cbar
     
-    def _add_barbs(self, ax, step=40):
+    def _add_barbs(self, ax, step=40, black_barbs=False):
         mycmap, mynorm, boundary, color_under, color_over = wind_speed_cmap_kt()
         ws = np.sqrt(self.uwind**2 + self.vwind**2)
-        cs_barbs = ax.barbs(
-            self.lon[::step, ::step], self.lat[::step, ::step], 
-            self.uwind[::step, ::step]/0.51444, self.vwind[::step, ::step]/0.51444, 
-            ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
-            length=6
-        )
+        if black_barbs:
+            cs_barbs = ax.barbs(
+                self.lon[::step, ::step], self.lat[::step, ::step], 
+                self.uwind[::step, ::step]/0.51444, self.vwind[::step, ::step]/0.51444, 
+                length=6
+            )
+        else:
+            cs_barbs = ax.barbs(
+                self.lon[::step, ::step], self.lat[::step, ::step], 
+                self.uwind[::step, ::step]/0.51444, self.vwind[::step, ::step]/0.51444, 
+                ws[::step, ::step]/0.51444, cmap=mycmap, norm=mynorm,
+                length=6
+            )
         cs_barbs.cmap.set_under(color_under)
         cs_barbs.cmap.set_over(color_over)
         return ax
@@ -310,11 +355,11 @@ class DrawGriddataMap:
                             mark_str, fontsize=mark_fontsize, color="k")
         return ax            
     
-    def draw(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False):
+    def draw(self, out_path, cmap_name, draw_barbs=False, black_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False, dark_mode=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
-        fig, ax = self._init_figure_axes()
-        ax = self._add_coast(ax)
-        ax = self._add_map_gridlines(ax)
+        fig, ax = self._init_figure_axes(dark_mode=dark_mode)
+        ax = self._add_coast(ax, dark_mode=dark_mode)
+        ax = self._add_map_gridlines(ax, dark_mode=dark_mode)
         ax.set_title(self.title, fontsize=16)
         pcolor_cs = ax.pcolormesh(
             self.lon, self.lat, self.values, 
@@ -323,16 +368,29 @@ class DrawGriddataMap:
         pcolor_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_cs.cmap.set_over(cmap_dict['color_over'])
         cbar_ax = fig.add_axes([0.935, 0.09, 0.018, 0.52])
-        cbar = fig.colorbar(
-            pcolor_cs, 
-            cax=cbar_ax, 
-            extend='both', 
-            ticks=cmap_dict['boundary']
-        )
-        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict)
+        if dark_mode:
+            cbar = fig.colorbar(
+                pcolor_cs,
+                cax=cbar_ax,
+                extend='both',
+                ticks=cmap_dict['boundary'], 
+                drawedges=True
+            )
+            cbar.outline.set_color('white')
+            cbar.outline.set_linewidth(0.5)
+            cbar.dividers.set_color('white')
+            cbar.dividers.set_linewidth(0.5)
+        else:
+            cbar = fig.colorbar(
+                pcolor_cs, 
+                cax=cbar_ax, 
+                extend='both', 
+                ticks=cmap_dict['boundary']
+            )
+        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict, dark_mode=dark_mode)
 
         if draw_barbs:
-            ax = self._add_barbs(ax)
+            ax = self._add_barbs(ax, black_barbs=black_barbs)
         if 'total_water' in self.__dict__:
             ax.text(
                 119.7, 20.92, 
@@ -348,19 +406,28 @@ class DrawGriddataMap:
         plt.savefig(out_path)
         plt.close()
 
-    def draw_zoom_in(self, out_path, cmap_name, draw_max=False, draw_max_tw=False, draw_max_main=False):
+    def draw_zoom_in(self, out_path, cmap_name, draw_max=False, draw_max_tw=False, draw_max_main=False, dark_mode=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
-        fig, ax = self._init_zoom_in_figure_axes()
-        ax = self._add_coast(ax)
-        ax = self._add_map_gridlines(ax)
+        fig, ax = self._init_zoom_in_figure_axes(dark_mode=dark_mode)
+        ax = self._add_coast(ax, dark_mode=dark_mode)
+        ax = self._add_map_gridlines(ax, dark_mode=dark_mode)
         
-        ax_k = fig.add_axes((0.12, 0.14, 0.2, 1), projection=ccrs.PlateCarree())
+        ax_k = fig.add_axes((0.12, 0.14, 0.2, 1), projection=ccrs.PlateCarree())        
         ax_k.set_extent([118.05, 118.55, 24.3, 24.6])
-        ax_k.add_feature(self.shape_feature_tw)
-
         ax_m = fig.add_axes((0.12, 0.295, 0.2, 1), projection=ccrs.PlateCarree())
         ax_m.set_extent([119.8, 120.3, 25.9, 26.4])
-        ax_m.add_feature(self.shape_feature_tw)
+        if dark_mode:
+            ax_k.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
+            ax_k.set_facecolor('#000000')
+            for spine in ax_k.spines.values():
+                spine.set_edgecolor('#ffffff')
+            ax_m.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
+            ax_m.set_facecolor('#000000')
+            for spine in ax_m.spines.values():
+                spine.set_edgecolor('#ffffff')
+        else:
+            ax_k.add_feature(self.shape_feature_tw)
+            ax_m.add_feature(self.shape_feature_tw)
 
         ax.set_title(self.title, fontsize=16)
 
@@ -382,15 +449,28 @@ class DrawGriddataMap:
         pcolor_k_cs.cmap.set_over(cmap_dict['color_over'])
         pcolor_m_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_m_cs.cmap.set_over(cmap_dict['color_over'])
-
         cbar_ax = fig.add_axes([0.929, 0.09, 0.02, 0.52])
-        cbar = fig.colorbar(
-            pcolor_cs, 
-            cax=cbar_ax, 
-            extend='both', 
-            ticks=cmap_dict['boundary']
-        )
-        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict)
+        if dark_mode:
+            cbar = fig.colorbar(
+                pcolor_cs,
+                cax=cbar_ax,
+                extend='both',
+                ticks=cmap_dict['boundary'], 
+                drawedges=True
+            )
+            cbar.outline.set_color('white')
+            cbar.outline.set_linewidth(0.5)
+            cbar.dividers.set_color('white')
+            cbar.dividers.set_linewidth(0.5)
+        else:
+            cbar = fig.colorbar(
+                pcolor_cs, 
+                cax=cbar_ax, 
+                extend='both', 
+                ticks=cmap_dict['boundary']
+            )
+        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict, dark_mode=dark_mode)
+        
         if draw_max:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
             ax_k = self._mark_max_on_map(ax_k, self.values, 15, 12, 19)
@@ -406,11 +486,11 @@ class DrawGriddataMap:
         plt.savefig(out_path)
         plt.close()
         
-    def draw_zoom_out(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False):
+    def draw_zoom_out(self, out_path, cmap_name, draw_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False, dark_mode=False):
         mycmap, mynorm, cmap_dict = self._load_colormap(cmap_name)
-        fig, ax = self._init_zoom_out_figure_axes()
-        ax = self._add_coast(ax)
-        ax = self._add_map_gridlines(ax, fontsize=14)
+        fig, ax = self._init_zoom_out_figure_axes(dark_mode=dark_mode)
+        ax = self._add_coast(ax, dark_mode=dark_mode)
+        ax = self._add_map_gridlines(ax, fontsize=14, dark_mode=dark_mode)
         ax.set_title(self.title, fontsize=18)
         pcolor_cs = ax.pcolormesh(
             self.lon, self.lat, self.values, 
@@ -419,17 +499,27 @@ class DrawGriddataMap:
         pcolor_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_cs.cmap.set_over(cmap_dict['color_over'])
         cbar_ax = fig.add_axes([0.94, 0.08, 0.016, 0.62])
-        cbar = fig.colorbar(
-            pcolor_cs, 
-            cax=cbar_ax, 
-            extend='both', 
-            ticks=cmap_dict['boundary']
-        )
-        cbar = self._set_colorbar_title_ticklabels(
-            cbar, 
-            cmap_dict, 
-            ticksize=8
-        )
+        if dark_mode:
+            cbar = fig.colorbar(
+                pcolor_cs,
+                cax=cbar_ax,
+                extend='both',
+                ticks=cmap_dict['boundary'], 
+                drawedges=True
+            )
+            cbar.outline.set_color('white')
+            cbar.outline.set_linewidth(0.5)
+            cbar.dividers.set_color('white')
+            cbar.dividers.set_linewidth(0.5)
+        else:
+            cbar = fig.colorbar(
+                pcolor_cs, 
+                cax=cbar_ax, 
+                extend='both', 
+                ticks=cmap_dict['boundary']
+            )
+        cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict, ticksize=8, dark_mode=dark_mode)
+        
         if draw_max:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
         if draw_max_main:
@@ -439,9 +529,9 @@ class DrawGriddataMap:
         plt.savefig(out_path)
         plt.close()
         
-    def draw_wind_barbs(self, out_path):
+    def draw_wind_barbs(self, out_path, black_barbs=False):
         fig, ax = self._init_figure_axes()
-        ax = self._add_barbs(ax)
+        ax = self._add_barbs(ax, black_barbs=black_barbs)
         ax.axis('off')
         plt.savefig(out_path, transparent=True)
         plt.close()
