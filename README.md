@@ -7,6 +7,12 @@
 目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
 我放置在資料夾demo_from_cwa之中，請自行翻閱
 
+# 2024/07/10 更新摘要
+1. 補上邊界的經緯度標示，經緯度輔助線調粗
+2. 新增雷達迴波所使用之色階`Radar_Composite_Reflectivity`
+3. 配合雷達迴波新增黑底模式，使用`Draw_obj.draw(..., dark_mode=True)`呼叫
+4. 新增黑色的風標圖，避免底色是風速時，相同顏色的風標看不清楚的問題，使用`Draw_obj.draw(..., draw_barbs=True, black_barbs=True)`呼叫
+
 # 2024/06/27 更新摘要
 1. 新增`draw_wind_barbs`方法，可繪製僅含風標圖的透明背景圖，圖框範圍與`draw`相同  
 2. 新增`put_uwind_vwind`方法，可以僅匯入風標圖所需的uwind與vwind(單位為公尺每秒)  
