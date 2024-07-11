@@ -1,4 +1,29 @@
 {
+    "Radar_Composite_Reflectivity":{
+        "color_under":"#000000",
+        "color_over":"#f07ff0",
+        "boundary":[
+            -15, -10, -5, 0, 5,
+             10, 15, 20, 25, 30,
+             35, 40, 45, 50, 55,  
+             60, 65, 70, 75
+        ],
+        "hex_list":[
+            "#292829", "#616263", "#b8b8ba", "#a8aeed", "#7882f0", 
+            "#78c0f0", "#2b5978", "#d0fca7", "#2cde53", "#0a8c03",
+            "#f7f48b", "#ffc34a", "#f28541", "#f53861", "#6e1423", 
+            "#5dfcf7", "#0c0cfa", "#f7dae2"
+        ],
+        "ticklabels":[
+            "-15", "-10", "-5", "0", "5", 
+            "10", "15", "20", "25", "30",
+            "35", "40", "45", "50", "55", 
+            "60", "65", "70", "75"
+        ],
+        "unit":"dBZ",
+        "unit_xloc":1.48,
+        "unit_yloc":1.05
+    },
     "precipitation":{
         "color_under":"#ffffff",
         "color_over":"#ffccff",
