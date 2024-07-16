@@ -175,7 +175,7 @@
         "unit_yloc":1.05
     },
     "probability":{
-        "color_under":"#5B9BA8",
+        "color_under":"#FFFFFF",
         "color_over":"#FFBAD8",
         "boundary":[
             5, 10, 15, 20, 

@@ -64,12 +64,15 @@ def wind_speed_cmap_kt():
 
 class DrawGriddataMap:
     
-    def __init__(self, ref_dir='ref', china_coast=True, coast_width=0.8, caisancho=False):
+    def __init__(self, ref_dir='ref', china_coast=False, coast_width=0.8, caisancho=False):
         self.ref_dir = ref_dir
         self.china_coast = china_coast
         self.caisancho = caisancho
         self._load_shapefile(coast_width, caisancho=caisancho)
         self._pre_load_colorset_file()
+        
+        self.title = ''
+        self.lon, self.lat = np.meshgrid(np.arange(117, 124+0.01, 0.01), np.arange(21.2, 27+0.01, 0.01))
         
     def _pre_load_colorset_file(self):
         with open(f'{self.ref_dir}/colorset.json') as fid:
