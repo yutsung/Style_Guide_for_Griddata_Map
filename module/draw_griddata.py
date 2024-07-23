@@ -204,7 +204,7 @@ class DrawGriddataMap:
                 self.v2_offshore_islands[iline] = int(line.split()[5])
         self.v1_offshore_islands[:] = self.v2_offshore_islands.reshape(581, 701)[28:553, 78:653].reshape(-1)
         
-    def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None):
+    def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None, lead_time_unit='f'):
         self.product = product
         self.parameter = parameter
         self.lead_time_start = lead_time_start
@@ -213,9 +213,9 @@ class DrawGriddataMap:
             lead_time_str = ''
         else:
             if (lead_time_end == None) or (lead_time_start == lead_time_end):
-                lead_time_str = f'+{lead_time_start}h'
+                lead_time_str = f'+{lead_time_start}{lead_time_unit}'
             else:
-                lead_time_str = f'+({lead_time_start}-{lead_time_end}h)'
+                lead_time_str = f'+({lead_time_start}-{lead_time_end}{lead_time_unit})'
             
         self.title = (
             f'{self.product} {self.parameter} : '
@@ -327,20 +327,26 @@ class DrawGriddataMap:
         cs_barbs.cmap.set_over(color_over)
         return ax
     
-    def _mark_max_on_tw(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
+    def _mark_max_on_tw(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2, dark_mode=False):
         values = self.mask_sea_gfe1km_func(values, tw_land_only=True)
-        ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2)
+        ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2, dark_mode=dark_mode)
         return ax
     
-    def _mark_max_on_main(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
+    def _mark_max_on_main(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2, dark_mode=False):
         values = self.mask_sea_gfe1km_func(values, main_region_only=True)
-        ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2)
+        ax = self._mark_max_on_map(ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2, dark_mode=dark_mode)
         return ax
     
-    def _mark_max_on_map(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2):
+    def _mark_max_on_map(self, ax, values, mark_size, mark_str_x_gap, mark_fontsize, action_threshold=1e-2, dark_mode=False):
         max_value = np.nanmax(values)
         y_points_idx, x_points_idx = np.where(values==max_value)
         mark_str = str(int(round_v3(max_value)))
+        if dark_mode:
+            plot_c = 'w^'
+            text_c = 'w'
+        else:
+            plot_c = 'k^'
+            text_c = 'k'
         if (len(x_points_idx) > 0) & (max_value > action_threshold):
             for x_idx, y_idx in zip(x_points_idx, y_points_idx):
                 if (
@@ -350,12 +356,12 @@ class DrawGriddataMap:
                     ax.plot(
                         self.lon[y_idx, x_idx], 
                         self.lat[y_idx, x_idx], 
-                        'k^', markersize=mark_size, markeredgewidth=2, markerfacecolor='None')            
+                        plot_c, markersize=mark_size, markeredgewidth=2, markerfacecolor='None')            
                     if (x_idx+mark_str_x_gap) < self.lon.shape[1]:
                         ax.text(
                             self.lon[y_idx, x_idx+mark_str_x_gap], 
                             self.lat[y_idx, x_idx+mark_str_x_gap], 
-                            mark_str, fontsize=mark_fontsize, color="k")
+                            mark_str, fontsize=mark_fontsize, color=text_c)
         return ax            
     
     def draw(self, out_path, cmap_name, draw_barbs=False, black_barbs=False, draw_max=False, draw_max_tw=False, draw_max_main=False, dark_mode=False):
@@ -401,11 +407,11 @@ class DrawGriddataMap:
                 fontsize=16
             )
         if draw_max:
-            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_main:
-            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_tw:
-            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         plt.savefig(out_path)
         plt.close()
 
@@ -475,17 +481,17 @@ class DrawGriddataMap:
         cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict, dark_mode=dark_mode)
         
         if draw_max:
-            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
-            ax_k = self._mark_max_on_map(ax_k, self.values, 15, 12, 19)
-            ax_m = self._mark_max_on_map(ax_m, self.values, 15, 12, 19)
+            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_k = self._mark_max_on_map(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_m = self._mark_max_on_map(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_main:
-            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
-            ax_k = self._mark_max_on_main(ax_k, self.values, 15, 12, 19)
-            ax_m = self._mark_max_on_main(ax_m, self.values, 15, 12, 19)
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_k = self._mark_max_on_main(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_m = self._mark_max_on_main(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_tw:
-            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
-            ax_k = self._mark_max_on_tw(ax_k, self.values, 15, 12, 19)
-            ax_m = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19)
+            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_k = self._mark_max_on_tw(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_m = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         plt.savefig(out_path)
         plt.close()
         
@@ -524,11 +530,11 @@ class DrawGriddataMap:
         cbar = self._set_colorbar_title_ticklabels(cbar, cmap_dict, ticksize=8, dark_mode=dark_mode)
         
         if draw_max:
-            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_map(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_main:
-            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_main(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_tw:
-            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19)
+            ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
         plt.savefig(out_path)
         plt.close()
         
