@@ -204,7 +204,7 @@ class DrawGriddataMap:
                 self.v2_offshore_islands[iline] = int(line.split()[5])
         self.v1_offshore_islands[:] = self.v2_offshore_islands.reshape(581, 701)[28:553, 78:653].reshape(-1)
         
-    def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None, lead_time_unit='f'):
+    def set_info(self, product, parameter, init_date, lead_time_start=-999, lead_time_end=None, lead_time_unit='h'):
         self.product = product
         self.parameter = parameter
         self.lead_time_start = lead_time_start
