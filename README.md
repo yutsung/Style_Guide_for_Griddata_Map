@@ -9,7 +9,7 @@
 
 # 2024/07/23 更新摘要
 1. 修正黑底模式的地圖最大值使用黑色文字標示的錯誤，改為白色
-2. 在`set_info`方法新增`lead_time_unit`的關鍵字，預設為f，可以如下操作調整`Draw_obj.set_info(..., lead_time_unit='m')`
+2. 在`set_info`方法新增`lead_time_unit`的關鍵字，預設為h，可以如下操作調整`Draw_obj.set_info(..., lead_time_unit='m')`
 
 # 2024/07/16 更新摘要
 1. 為了增加方便性，不設定經緯度的情況下預設提供最新版GFE網格點
