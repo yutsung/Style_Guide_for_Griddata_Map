@@ -441,9 +441,14 @@ class DrawGriddataMap:
         ax = self._add_map_gridlines(ax, dark_mode=dark_mode)
         
         ax_k = fig.add_axes((0.115, 0.15, 0.2, 1), projection=ccrs.PlateCarree())
-        ax_k.set_extent([118.05, 118.55, 24.3, 24.6])
-        ax_m = fig.add_axes((0.21, 0.315, 0.3, 1), projection=ccrs.PlateCarree())
-        ax_m.set_extent([119.85, 120.55, 25.9, 26.42])
+        ax_k.set_extent([118.11, 118.52, 24.33, 24.58])
+        ax_m = fig.add_axes((0.21, 0.301, 0.148, 1), projection=ccrs.PlateCarree())
+        ax_m.set_extent([119.89, 120.04, 26.11, 26.31])
+        ax_d = fig.add_axes((0.371, 0.344, 0.12, 1), projection=ccrs.PlateCarree())
+        ax_d.set_extent([120.45, 120.53, 26.34, 26.4])
+        ax_g = fig.add_axes((0.371, 0.260, 0.12, 1), projection=ccrs.PlateCarree())
+        ax_g.set_extent([119.91, 120.0, 25.93, 26.0])
+        
         if dark_mode:
             ax_k.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
             ax_k.set_facecolor('#000000')
@@ -453,9 +458,19 @@ class DrawGriddataMap:
             ax_m.set_facecolor('#000000')
             for spine in ax_m.spines.values():
                 spine.set_edgecolor('#ffffff')
+            ax_d.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
+            ax_d.set_facecolor('#000000')
+            for spine in ax_d.spines.values():
+                spine.set_edgecolor('#ffffff')
+            ax_g.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
+            ax_g.set_facecolor('#000000')
+            for spine in ax_g.spines.values():
+                spine.set_edgecolor('#ffffff')
         else:
             ax_k.add_feature(self.shape_feature_tw)
             ax_m.add_feature(self.shape_feature_tw)
+            ax_d.add_feature(self.shape_feature_tw)
+            ax_g.add_feature(self.shape_feature_tw)
 
         ax.set_title(self.title, fontsize=16)
 
@@ -471,12 +486,24 @@ class DrawGriddataMap:
             self.lon, self.lat, self.values, 
             cmap=mycmap, norm=mynorm
         )
+        pcolor_d_cs = ax_d.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
+        pcolor_g_cs = ax_g.pcolormesh(
+            self.lon, self.lat, self.values, 
+            cmap=mycmap, norm=mynorm
+        )
         pcolor_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_cs.cmap.set_over(cmap_dict['color_over'])
         pcolor_k_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_k_cs.cmap.set_over(cmap_dict['color_over'])
         pcolor_m_cs.cmap.set_under(cmap_dict['color_under'])
         pcolor_m_cs.cmap.set_over(cmap_dict['color_over'])
+        pcolor_d_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_d_cs.cmap.set_over(cmap_dict['color_over'])
+        pcolor_g_cs.cmap.set_under(cmap_dict['color_under'])
+        pcolor_g_cs.cmap.set_over(cmap_dict['color_over'])
         cbar_ax = fig.add_axes([0.929, 0.09, 0.02, 0.52])
         if dark_mode:
             cbar = fig.colorbar(
@@ -503,14 +530,20 @@ class DrawGriddataMap:
             ax = self._mark_max_on_map(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_k = self._mark_max_on_map(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_m = self._mark_max_on_map(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_d = self._mark_max_on_map(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_g = self._mark_max_on_map(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_main:
             ax = self._mark_max_on_main(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_k = self._mark_max_on_main(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_m = self._mark_max_on_main(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_d = self._mark_max_on_main(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_g = self._mark_max_on_main(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         if draw_max_tw:
             ax = self._mark_max_on_tw(ax, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_k = self._mark_max_on_tw(ax_k, self.values, 15, 12, 19, dark_mode=dark_mode)
             ax_m = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_d = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
+            ax_g = self._mark_max_on_tw(ax_m, self.values, 15, 12, 19, dark_mode=dark_mode)
         plt.savefig(out_path)
         plt.close()
         
