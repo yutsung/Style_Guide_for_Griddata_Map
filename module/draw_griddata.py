@@ -64,7 +64,7 @@ def wind_speed_cmap_kt():
 
 class DrawGriddataMap:
     
-    def __init__(self, ref_dir='ref', china_coast=False, coast_width=0.8, caisancho=False):
+    def __init__(self, ref_dir='ref', china_coast=False, coast_width=0.4, caisancho=False):
         self.ref_dir = ref_dir
         self.china_coast = china_coast
         self.caisancho = caisancho
@@ -128,6 +128,25 @@ class DrawGriddataMap:
                 facecolor='none',
                 linewidth=linewidth
             )
+            
+    def interp_to_gfe(self):
+        """ 
+            interpolate values to GFE
+            function untested
+        """
+        from scipy.interpolate import griddata
+        gfe_lon, gfe_lat = np.meshgrid(np.arange(117, 124+0.01, 0.01), np.arange(21.2, 27+0.01, 0.01))
+        assert self.lon.shape == self.lat.shape
+        points = np.zeros((self.lon.size, 2))
+        points[:, 0] = lon.reshape(-1)[:]
+        points[:, 1] = lat.reshape(-1)[:]
+        self.values = griddata(
+            points, 
+            self.values.reshape(-1), 
+            (gfe_lon.reshape(-1), gfe_lat.reshape(-1)), 
+            method='linear'
+        )
+        self.lon, self.lat = gfe_lon, gfe_lat        
     
     def put_latlon(self, lat, lon):
         self.lat = lat
@@ -421,10 +440,10 @@ class DrawGriddataMap:
         ax = self._add_coast(ax, dark_mode=dark_mode)
         ax = self._add_map_gridlines(ax, dark_mode=dark_mode)
         
-        ax_k = fig.add_axes((0.12, 0.14, 0.2, 1), projection=ccrs.PlateCarree())        
+        ax_k = fig.add_axes((0.115, 0.15, 0.2, 1), projection=ccrs.PlateCarree())
         ax_k.set_extent([118.05, 118.55, 24.3, 24.6])
-        ax_m = fig.add_axes((0.12, 0.295, 0.2, 1), projection=ccrs.PlateCarree())
-        ax_m.set_extent([119.8, 120.3, 25.9, 26.4])
+        ax_m = fig.add_axes((0.21, 0.315, 0.3, 1), projection=ccrs.PlateCarree())
+        ax_m.set_extent([119.85, 120.55, 25.9, 26.42])
         if dark_mode:
             ax_k.add_feature(self.shape_feature_tw, edgecolor='#f7f48b', linewidth=1)
             ax_k.set_facecolor('#000000')
