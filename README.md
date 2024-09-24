@@ -1,11 +1,15 @@
 # Style Guide for Griddata Map
-根據中心的需求，希望我們配合[樣板](https://docs.google.com/document/d/1b1dGYjO1mGeYgrPQK3_8sWPZ6pVscdeSx42hC0UKyFY/edit)，  
-制定並生產公版模組，上述文件中已包含部分因子的色階指引，可直接使用或自行從設定檔擴充，  
-因為是統一格式，所以希望大家把意見彙集成一份模組就好，  
-目前有開權限給大家，歡迎翻閱取用與回饋  
+根據中心的需求，希望我們參考[樣板](https://docs.google.com/document/d/1b1dGYjO1mGeYgrPQK3_8sWPZ6pVscdeSx42hC0UKyFY/edit)，  
+以該樣板為起點發展公版模組。  
+樣板程式碼放置在資料夾demo_from_cwa之中，有需要請自行翻閱  
+註:該樣板已與目前發展中之公版相差許多，並且該樣板是由python2.7的grads套件所繪製  
 
-目前局內有提供產生範本的繪圖程式，是由python2.7的grads套件所繪製  
-我放置在資料夾demo_from_cwa之中，請自行翻閱
+# 2024/09/04 更新摘要
+1. 金門圖框放大金門陸地比例  
+2. 馬祖圖框拆成三張，分別是南北竿/東引/莒光  
+3. 調整最大值搜尋範圍，納入東引，移除亮島  
+4. 為了避免海岸線遮蔽小島的網格資訊，預設粗細由0.8調整為0.4  
+5. 將繪製高程的範例與圖片放置於此頁  
 
 # 2024/07/23 更新摘要
 1. 修正黑底模式的地圖最大值使用黑色文字標示的錯誤，改為白色
@@ -56,7 +60,7 @@ numpy 1.26.1
 
 ## 使用說明
 基本上是操作`module`內的`draw_griddata.py`  
-操作方式也可以參考`module`內的`load_demo.py`  
+操作方式可以參考`module`內的`load_demo.py`  
 還有要複製ref裡面需要的參考檔。  
   
 0. 增加色階設定
@@ -100,7 +104,7 @@ numpy 1.26.1
 ```
 1. 初始化繪圖工具  
 從模組中匯入`DrawGriddataMap`，再將其初始化，初始化欄位有四個可以填寫，以下是名稱與預設值，  
-`ref_dir='ref', china_coast=True, coast_width=0.8, caisancho=False`，第一個是參考資料夾的位子，  
+`ref_dir='ref', china_coast=False, coast_width=0.4, caisancho=False`，第一個是參考資料夾的位子，  
 第二個是是否要繪製中國海岸線，不繪製可以加速，第三個是海岸線粗細，偏粗會不容易看清離島的數值，  
 偏細會影響本島縣市的判讀，最後一個是是否繪製外傘頂洲。  
 ```python
@@ -108,7 +112,8 @@ from module.draw_griddata import DrawGriddataMap
 Draw_obj = DrawGriddataMap()
 ```
 2. 輸入網格點ARRAY  
-這裡的`lat`與`lon`都是二維的numpy array，單精度雙精度都可以使用  
+這裡的`lat`與`lon`都是二維的numpy array，單精度雙精度都可以使用，  
+預設會以新版1公里GFE初始化(117~124, 21.2~27)，資料符合該範圍可以跳過此步驟。  
 ```python
 Draw_obj.put_latlon(lat, lon)
 ```
@@ -137,7 +142,7 @@ Draw_obj.set_info('ECDCA', 'max-T', init_date, 24, 36)
 第三個欄位是`draw_barbs`預設是False，改成True可以疊上風標圖(步驟3要匯入風速)，  
 若使用draw_zoom_in方法，則無風標圖可使用
 ```python
-Draw_obj.mask_sea_gfe1km() # 若要不繪製非圖資範圍的顏色，非必要
+Draw_obj.mask_sea_gfe1km() # 用以遮蔽圖資外的範圍，自行選擇是否使用
 Draw_obj.draw('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_in('tmax_demo.png', 'temperature')
 Draw_obj.draw_zoom_out('tmax_demo.png', 'temperature')
