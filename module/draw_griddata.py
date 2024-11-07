@@ -441,13 +441,13 @@ class DrawGriddataMap:
         ax = self._add_map_gridlines(ax, dark_mode=dark_mode)
         
         ax_k = fig.add_axes((0.115, 0.15, 0.2, 1), projection=ccrs.PlateCarree())
-        ax_k.set_extent([117.98, 118.62, 24.25, 24.65])
+        ax_k.set_extent([118, 118.6, 24.24, 24.66])        
         ax_m = fig.add_axes((0.21, 0.301, 0.148, 1), projection=ccrs.PlateCarree())
-        ax_m.set_extent([119.8786, 120.0514, 26.0835, 26.3141])
+        ax_m.set_extent([119.881725, 120.048275, 26.0835, 26.305759])        
         ax_d = fig.add_axes((0.359, 0.341, 0.12, 1), projection=ccrs.PlateCarree())
-        ax_d.set_extent([120.42, 120.56, 26.3138, 26.4272])
+        ax_d.set_extent([120.42248, 120.55752, 26.3158088, 26.4251912])
         ax_g = fig.add_axes((0.359, 0.262, 0.12, 1), projection=ccrs.PlateCarree())
-        ax_g.set_extent([119.888, 120.028, 25.9032, 26.0208])
+        ax_g.set_extent([119.89048, 120.02552, 25.9052832, 26.0187168])
         #ax_g.spines['geo'].set_edgecolor('#666666')
         
         if dark_mode:
