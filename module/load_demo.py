@@ -1,10 +1,10 @@
 import numpy as np
 
-def load_demo_gfe0p01d_v2():
+def load_demo_gfe0p01d_v2(ref_path='ref'):
     lon = np.zeros(407281, 'f4')
     lat = np.zeros(407281, 'f4')
     alt = np.zeros(407281, 'f4')
-    with open('ref/GFEGridInfo_1km_Ext.txt') as fid:
+    with open(f'{ref_path}/GFEGridInfo_1km_Ext.txt') as fid:
         for iline, line in enumerate(fid):
             lon[iline] = float(line.split()[2])
             lat[iline] = float(line.split()[3])
