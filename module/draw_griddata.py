@@ -72,7 +72,18 @@ class DrawGriddataMap:
         self._pre_load_colorset_file()
         
         self.title = ''
-        self.lon, self.lat = np.meshgrid(np.arange(117, 124+0.01, 0.01), np.arange(21.2, 27+0.01, 0.01))
+        self.lon, self.lat, self.values = self._load_gfe_latlon_func()
+        
+    def _load_gfe_latlon_func(self):
+        lon = np.zeros(407281, 'f4')
+        lat = np.zeros(407281, 'f4')
+        alt = np.zeros(407281, 'f4')
+        with open(f'{self.ref_dir}/GFEGridInfo_1km_Ext.txt') as fid:
+            for iline, line in enumerate(fid):
+                lon[iline] = float(line.split()[2])
+                lat[iline] = float(line.split()[3])
+                alt[iline] = float(line.split()[4])
+        return lon.reshape(581, 701), lat.reshape(581, 701), alt.reshape(581, 701)
         
     def _pre_load_colorset_file(self):
         with open(f'{self.ref_dir}/colorset.json') as fid:
@@ -132,10 +143,10 @@ class DrawGriddataMap:
     def interp_to_gfe(self):
         """ 
             interpolate values to GFE
-            function untested
+            This function is untested.
         """
         from scipy.interpolate import griddata
-        gfe_lon, gfe_lat = np.meshgrid(np.arange(117, 124+0.01, 0.01), np.arange(21.2, 27+0.01, 0.01))
+        gfe_lon, gfe_lat, _ = self._load_gfe_latlon_func(self)
         assert self.lon.shape == self.lat.shape
         points = np.zeros((self.lon.size, 2))
         points[:, 0] = lon.reshape(-1)[:]
